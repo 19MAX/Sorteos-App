@@ -48,7 +48,7 @@ Las colas se utilizan para:
 
 ---
 
-## ▶️ Ejecución del worker
+## Ejecución del worker
 
 Para procesar la cola:
 
@@ -58,7 +58,7 @@ php spark queue:work --nombre cola
 
 ---
 
-## ⚠️ Recomendaciones
+## Recomendaciones
 
 * Usar colas para tareas pesadas o repetitivas
 * No ejecutar procesos largos directamente en controladores
@@ -66,7 +66,7 @@ php spark queue:work --nombre cola
 
 ---
 
-## 🚧 Mejoras futuras
+## Mejoras futuras
 
 * Implementar reintentos automáticos
 * Manejo de errores en jobs
