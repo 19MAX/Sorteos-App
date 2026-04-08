@@ -6,8 +6,18 @@ use CodeIgniter\Config\BaseConfig;
 
 class Email extends BaseConfig
 {
-    public string $fromEmail  = '';
-    public string $fromName   = '';
+    public function __construct()
+    {
+        $this->SMTPHost = getenv('SMTP_HOST') ?? '';
+        $this->SMTPPort = getenv('SMTP_PORT') ?? '';
+        $this->SMTPUser = getenv('SMTP_USER') ?? '';
+        $this->SMTPPass = getenv('SMTP_PASSWORD') ?? '';
+
+        $this->fromEmail = getenv('SMTP_USER') ?? '';
+        $this->fromName = getenv('SMTP_NAME') ?? '';
+    }
+    public string $fromEmail = '';
+    public string $fromName = '';
     public string $recipients = '';
 
     /**
@@ -18,7 +28,7 @@ class Email extends BaseConfig
     /**
      * The mail sending protocol: mail, sendmail, smtp
      */
-    public string $protocol = 'mail';
+    public string $protocol = 'smtp';
 
     /**
      * The server path to Sendmail.
