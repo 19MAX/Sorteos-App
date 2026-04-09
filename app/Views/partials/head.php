@@ -10,4 +10,5 @@
 
   <script type="module" crossorigin src="<?=base_url("")?>/assets/js/main.js"></script>
   <link rel="stylesheet" crossorigin href="<?=base_url("")?>/assets/css/main.css">
+  <link rel="stylesheet" href="<?=base_url("")?>/assets/css/sweetalert2.css">
 </head>

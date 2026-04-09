@@ -1,0 +1,123 @@
+/* Estilo general del popup */
+.custom-popup {
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    /* Sombra profesional */
+    font-family: 'Roboto', sans-serif;
+    font-size: 1rem;
+    transition: all 0.3s ease-in-out;
+}
+
+.swal2-toast {
+    box-sizing: border-box;
+    grid-column: 1/4 !important;
+    grid-row: 1/4 !important;
+    grid-template-columns: min-content auto min-content;
+    padding: 1em;
+    overflow-y: hidden;
+    background: #f1f5f7 !important;
+    box-shadow: 0 0 1px rgba(0, 0, 0, .075), 0 1px 2px rgba(0, 0, 0, .075), 1px 2px 4px rgba(0, 0, 0, .075), 1px 3px 8px rgba(0, 0, 0, .075), 2px 4px 16px rgba(0, 0, 0, .075);
+    pointer-events: all;
+}
+
+.swal2-container .swal2-title {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.swal2-toast h2:where(.swal2-title) {
+    margin: .5em 1em;
+    padding: 0;
+    font-size: 18px !important;
+    ;
+    text-align: center !important;
+}
+
+.swal2-popup .swal2-title {
+    font-size: 24px;
+    font-weight: 500;
+}
+
+/* Estilo del título */
+.custom-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+    color: #2c3e50;
+    /* Color del título */
+    margin-bottom: 10px;
+}
+
+/* Contenedor del contenido */
+.custom-html {
+    font-size: 1rem;
+    color: #7f8c8d;
+    /* Texto gris profesional */
+    text-align: center;
+    line-height: 1.5;
+}
+
+/* Botón de confirmación */
+.custom-confirm-button {
+    background-color: #4caf50;
+    /* Verde profesional */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.custom-confirm-button:hover {
+    background-color: #388e3c;
+    /* Verde más oscuro */
+}
+
+/* Bordes de colores según tipo */
+.swal2-success {
+    border-left: 6px solid #4caf50;
+    /* Borde verde para éxito */
+}
+
+.swal2-error {
+    border-left: 6px solid #e74c3c;
+    /* Borde rojo para error */
+}
+
+.swal2-warning {
+    border-left: 6px solid #f39c12;
+    /* Borde amarillo para advertencia */
+}
+
+.swal2-info {
+    border-left: 6px solid #3498db;
+    /* Borde azul para información */
+}
+
+/* Toast popup estilo */
+.custom-toast-popup {
+    border-radius: 8px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    /* Fondo neutro */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    /* Sombra suave */
+    transition: all 0.3s ease;
+}
+
+/* Título del toast */
+.custom-toast-title {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #2c3e50;
+    /* Color oscuro */
+}
+
+
+.custom-popup,
+.custom-toast-popup {
+    animation: fadeIn 0.3s ease-in-out;
+}
