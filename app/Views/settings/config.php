@@ -5,19 +5,14 @@
 ">
 <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.2.6/css/buttons.bootstrap5.css
 ">
-<!-- <style>
-    .dt-container .row .dt-layout-start{
-        padding-left: 0;
-        /* padding-right: 0; */
-    }
-    .dt-container .row .dt-layout-end{
-    padding-right: 0;
-}
-    .dt-layout-table .d-md-flex{
-        padding-left: 0;
-        padding-right: 0;
-    }
-</style> -->
+<!-- <?php
+// Recuperar datos flash
+$lastAction = session()->getFlashdata('last_action');
+$lastData = session()->getFlashdata('last_data') ?? [];
+$flashValidation = session()->getFlashdata('flashValidation') ?? []; // array de errores por campo
+$bankActions = ['create', 'edit']; // Agrega aquí futuras acciones de bancos
+$isBankTab = in_array($lastAction, $bankActions);
+?> -->
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
@@ -34,14 +29,18 @@
     <div class="col-12">
         <nav>
             <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home"
-                    type="button" role="tab" aria-controls="nav-home" aria-selected="true">Producto</button>
-                <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile"
-                    type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Bancos</button>
+                <button class="nav-link <?= !$isBankTab ? 'active' : '' ?>" id="nav-home-tab" data-bs-toggle="tab"
+                    data-bs-target="#nav-home" type="button" role="tab">
+                    Producto
+                </button>
+                <button class="nav-link <?= $isBankTab ? 'active' : '' ?>" id="nav-profile-tab" data-bs-toggle="tab"
+                    data-bs-target="#nav-profile" type="button" role="tab">
+                    Bancos
+                </button>
             </div>
         </nav>
         <div class="tab-content" id="nav-tabContent">
-            <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab"
+            <div class="tab-pane fade <?= !$isBankTab ? 'show active' : '' ?>" id="nav-home" role="tabpanel"
                 tabindex="0">
 
                 <div class="card">
@@ -179,7 +178,9 @@
                     </div>
                 </div>
             </div>
-            <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab" tabindex="0">
+            <!-- Tab Bancos — ✅ activo si hubo error -->
+            <div class="tab-pane fade <?= $isBankTab ? 'show active' : '' ?>" id="nav-profile" role="tabpanel"
+                tabindex="0">
 
                 <div class="row">
                     <div class="col-12">
@@ -196,29 +197,40 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-
                                     <?php foreach ($data_banks as $bank): ?>
-                                        <tr class="align-middle ">
+                                        <tr class="align-middle">
                                             <td>
-                                                <a href="">
-                                                    <img src="<?= base_url('uploads/bancos/' . ($bank['logo'] ?? 'assets/images/product-1.png')) ?>"
-                                                        alt="" class="avatar avatar-md rounded" />
-                                                    <span class="ms-3">
-                                                        <?= $bank['nombre_banco'] ?>
-                                                    </span>
+                                                <img src="<?= base_url('uploads/bancos/' . ($bank['logo'] ?? 'assets/images/product-1.png')) ?>"
+                                                    alt="" class="avatar avatar-md rounded" />
+                                                <span class="ms-3"><?= esc($bank['nombre_banco']) ?></span>
+                                            </td>
+                                            <td><?= esc($bank['tipo_cuenta']) ?></td>
+                                            <td><?= esc($bank['numero_cuenta']) ?></td>
+                                            <td><?= esc($bank['titular']) ?></td>
+                                            <td>
+                                                <!-- ✅ Badge visual para activo/inactivo -->
+                                                <span class="badge <?= $bank['activo'] ? 'bg-success' : 'bg-danger' ?>">
+                                                    <?= $bank['activo'] ? 'Activo' : 'Inactivo' ?>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <!-- Editar — todos los datos en data-* -->
+                                                <a href="#" class="btn-edit" data-id="<?= $bank['id'] ?>"
+                                                    data-nombre_banco="<?= esc($bank['nombre_banco']) ?>"
+                                                    data-tipo_cuenta="<?= esc($bank['tipo_cuenta']) ?>"
+                                                    data-numero_cuenta="<?= esc($bank['numero_cuenta']) ?>"
+                                                    data-titular="<?= esc($bank['titular']) ?>"
+                                                    data-activo="<?= $bank['activo'] ?>"
+                                                    data-logo="<?= esc($bank['logo'] ?? '') ?>">
+                                                    <i class="ti ti-edit"></i>
+                                                </a>
+                                                <!-- Eliminar -->
+                                                <a href="#" class="link-danger btn-delete ms-2" data-id="<?= $bank['id'] ?>"
+                                                    data-nombre="<?= esc($bank['nombre_banco']) ?>">
+                                                    <i class="ti ti-trash"></i>
                                                 </a>
                                             </td>
-
-                                            <td><?= $bank['tipo_cuenta'] ?></td>
-                                            <td><?= $bank['numero_cuenta'] ?></td>
-                                            <td><?= $bank['titular'] ?></td>
-                                            <td><?= $bank['activo'] ? 'Sí' : 'No' ?></td>
-                                            <td class="">
-                                                <a href="#" class=""><i class="ti ti-edit "></i></a>
-                                                <a href="#" class="link-danger"><i class="ti ti-trash ms-2"></i></a>
-                                            </td>
                                         </tr>
-
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
@@ -229,21 +241,23 @@
 
                 </div>
             </div>
+
         </div>
     </div>
 
 
 </div>
 
-
+<!-- ===== MODAL CREAR BANCO ===== -->
 <div id="createModal" class="modal fade" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <form id="createForm" action="<?= route_to('settings.bank.create') ?>" method="post"
                 enctype="multipart/form-data">
+                <?= csrf_field() ?>
 
                 <div class="modal-header">
-                    <h5 class="modal-title">Crear Nuevo Registro</h5>
+                    <h5 class="modal-title">Crear Nuevo Banco</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
@@ -253,30 +267,38 @@
                         <!-- Nombre banco -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Nombre del Banco</label>
-                            <input type="text" class="form-control" name="nombre_banco" required>
+                            <input type="text" class="form-control" name="nombre_banco"
+                                value="<?= esc(old('nombre_banco', $lastData['nombre_banco'] ?? '')) ?>">
                         </div>
+
 
                         <!-- Tipo cuenta -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Tipo de Cuenta</label>
-                            <select class="form-control" name="tipo_cuenta" required>
+                            <select class="form-control" name="tipo_cuenta">
                                 <option value="">Seleccione</option>
-                                <option value="ahorros">Ahorros</option>
-                                <option value="corriente">Corriente</option>
-                                <option value="otro">Otro</option>
+                                <?php foreach (['ahorros' => 'Ahorros', 'corriente' => 'Corriente', 'otro' => 'Otro'] as $val => $label): ?>
+                                    <option value="<?= $val ?>" <?= (old('tipo_cuenta', $lastData['tipo_cuenta'] ?? '') === $val) ? 'selected' : '' ?>>
+                                        <?= $label ?>
+                                    </option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
+
 
                         <!-- Número cuenta -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Número de Cuenta</label>
-                            <input type="text" class="form-control" name="numero_cuenta" required>
+                            <input type="text" class="form-control" name="numero_cuenta"
+                                value="<?= esc(old('numero_cuenta', $lastData['numero_cuenta'] ?? '')) ?>">
                         </div>
+
 
                         <!-- Titular -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Titular de la Cuenta</label>
-                            <input type="text" class="form-control" name="titular" required>
+                            <input type="text" class="form-control" name="titular"
+                                value="<?= esc(old('titular', $lastData['titular'] ?? '')) ?>">
                         </div>
 
                         <!-- Logo -->
@@ -289,8 +311,8 @@
                         <div class="col-md-12 mb-3">
                             <label class="form-label">Estado</label>
                             <select class="form-control" name="activo">
-                                <option value="1" selected>Activo</option>
-                                <option value="0">Inactivo</option>
+                                <option value="1" <?= (old('activo', $lastData['activo'] ?? '1') == '1') ? 'selected' : '' ?>>Activo</option>
+                                <option value="0" <?= (old('activo', $lastData['activo'] ?? '1') == '0') ? 'selected' : '' ?>>Inactivo</option>
                             </select>
                         </div>
 
@@ -306,6 +328,110 @@
         </div>
     </div>
 </div>
+
+<!-- ===== MODAL EDITAR BANCO ===== -->
+<div id="editModal" class="modal fade" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="editForm" method="post" enctype="multipart/form-data">
+                <?= csrf_field() ?>
+                <!-- La action se setea dinámicamente con JS al abrir el modal -->
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Banco</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nombre del Banco</label>
+                            <input type="text" class="form-control" name="nombre_banco"
+                                value="<?= esc(old('nombre_banco', $lastData['nombre_banco'] ?? '')) ?>">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tipo de Cuenta</label>
+                            <select class="form-control" name="tipo_cuenta">
+                                <option value="">Seleccione</option>
+                                <?php foreach (['ahorros' => 'Ahorros', 'corriente' => 'Corriente', 'otro' => 'Otro'] as $val => $label): ?>
+                                    <option value="<?= $val ?>" <?= (old('tipo_cuenta', $lastData['tipo_cuenta'] ?? '') === $val) ? 'selected' : '' ?>>
+                                        <?= $label ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Número de Cuenta</label>
+                            <input type="text" class="form-control" name="numero_cuenta"
+                                value="<?= esc(old('numero_cuenta', $lastData['numero_cuenta'] ?? '')) ?>">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Titular de la Cuenta</label>
+                            <input type="text" class="form-control" name="titular"
+                                value="<?= esc(old('titular', $lastData['titular'] ?? '')) ?>">
+                        </div>
+
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Logo del Banco</label>
+                            <!-- Preview del logo actual -->
+                            <div id="editLogoPreview" class="mb-2"></div>
+                            <input type="file" class="form-control" name="logo" accept="image/*">
+                            <small class="text-muted">Dejar vacío para mantener el logo actual.</small>
+                        </div>
+
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Estado</label>
+                            <select class="form-control" name="activo">
+                                <option value="1" <?= (old('activo', $lastData['activo'] ?? '') == '1') ? 'selected' : '' ?>>Activo</option>
+                                <option value="0" <?= (old('activo', $lastData['activo'] ?? '') == '0') ? 'selected' : '' ?>>Inactivo</option>
+                            </select>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Actualizar</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODAL ELIMINAR BANCO ===== -->
+<div id="deleteModal" class="modal fade" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <form id="deleteForm" method="post">
+                <?= csrf_field() ?>
+
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">Eliminar Banco</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body text-center">
+                    <i class="ti ti-trash fs-1 text-danger"></i>
+                    <p class="mt-2">¿Estás seguro de eliminar el banco <strong id="deleteBankName"></strong>?</p>
+                    <small class="text-muted">Esta acción no se puede deshacer.</small>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
@@ -332,8 +458,16 @@
 <script src="https://cdn.datatables.net/buttons/3.2.6/js/buttons.colVis.min.js"></script>
 
 <script>
+
+    // ✅ Mapa acción → modal
+    const actionModalMap = {
+        'create': 'createModal',
+        'edit': 'editModal',
+        'delete': 'deleteModal',
+    };
+
     new DataTable('#example', {
-                language: { url: 'https://cdn.datatables.net/plug-ins/2.3.7/i18n/es-ES.json' },
+        language: { url: 'https://cdn.datatables.net/plug-ins/2.3.7/i18n/es-ES.json' },
 
         scrollX: true,
         layout: {
@@ -356,6 +490,51 @@
                 ]
             }
         }
+    });
+
+    // Abrir modal EDITAR — poblar campos con data-*
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.btn-edit');
+        if (!btn) return;
+        e.preventDefault();
+
+        const d = btn.dataset;
+        const form = document.getElementById('editForm');
+        const base = '<?= base_url("admin/settings/bank/update/") ?>';
+
+        // Setear action con el ID
+        form.action = base + d.id;
+
+        // Poblar campos
+        form.querySelector('[name="nombre_banco"]').value = d.nombre_banco;
+        form.querySelector('[name="tipo_cuenta"]').value = d.tipo_cuenta;
+        form.querySelector('[name="numero_cuenta"]').value = d.numero_cuenta;
+        form.querySelector('[name="titular"]').value = d.titular;
+        form.querySelector('[name="activo"]').value = d.activo;
+
+        // Preview logo actual
+        const preview = document.getElementById('editLogoPreview');
+        preview.innerHTML = d.logo
+            ? `<img src="<?= base_url('uploads/bancos/') ?>${d.logo}"
+                class="avatar avatar-md rounded" alt="Logo actual">`
+            : '';
+
+        new bootstrap.Modal(document.getElementById('editModal')).show();
+    });
+
+    // Abrir modal ELIMINAR
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.btn-delete');
+        if (!btn) return;
+        e.preventDefault();
+
+        const form = document.getElementById('deleteForm');
+        const base = '<?= base_url("admin/settings/bank/delete/") ?>';
+
+        form.action = base + btn.dataset.id;
+        document.getElementById('deleteBankName').textContent = btn.dataset.nombre;
+
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
     });
 </script>
 <?= $this->endSection() ?>

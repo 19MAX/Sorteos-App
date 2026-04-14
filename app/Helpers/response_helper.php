@@ -1,21 +1,30 @@
 <?php
 if (!function_exists('redirectView')) {
-    /**
-     * Redirige a una ruta específica con mensajes flash y datos de validación.
-     *
-     * @param string $route Ruta de redirección.
-     * @param mixed $validation Datos de validación (opcional).
-     * @param array|null $flashMessages Mensajes flash (opcional).
-     * @param array|null $last_data Datos del último formulario enviado (opcional).
-     * @param string|null $last_action Última acción realizada (opcional).
-     * @return \CodeIgniter\HTTP\RedirectResponse Redirección configurada.
-     */
-    function redirectView($route = 'login', $validation = null, $flashMessages = null, $last_data = null, $last_action = null)
-    {
+    function redirectView(
+        string $route = 'login',
+        mixed $validation = null,
+        ?array $flashMessages = null,
+        ?array $last_data = null,
+        ?string $last_action = null
+    ) {
+        $messages   = $flashMessages ?? [];
+        $fieldErrors = null; // ✅ Array por campo para mostrar debajo de inputs
+
+        if (!empty($validation)) {
+            if (is_array($validation)) {
+                $fieldErrors = $validation; // ✅ ['nombre_banco' => 'mensaje', ...]
+                $errorText   = implode('<br>', $validation);
+            } else {
+                $errorText = (string) $validation;
+            }
+
+            array_unshift($messages, [$errorText, 'error', 'center']);
+        }
+
         return redirect()->to($route)
-            ->with('flashValidation', isset($validation) ? $validation->getErrors() : null)
-            ->with('flashMessages', $flashMessages)
-            ->with('last_data', $last_data)
-            ->with('last_action', $last_action);
+            ->with('flashMessages',   !empty($messages) ? $messages : null)
+            ->with('flashValidation', $fieldErrors)   // ✅ Array por campo
+            ->with('last_data',       $last_data)
+            ->with('last_action',     $last_action);
     }
 }
