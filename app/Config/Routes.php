@@ -18,5 +18,6 @@ $routes->group('admin', function ($routes) {
         $routes->post('bank/create', 'Settings\BankController::create', ['as' => 'settings.bank.create']);
         $routes->post('bank/update/(:num)', 'Settings\BankController::update/$1', ['as' => 'settings.bank.update']);
         $routes->post('bank/delete/(:num)', 'Settings\BankController::delete/$1', ['as' => 'settings.bank.delete']);
+        $routes->post('tickets/settings', 'Settings\ConfigController::save', ['as' => 'settings.tickets.save']);
     });
 });

@@ -46,7 +46,7 @@ $isBankTab = in_array($lastAction, $bankActions);
                 <div class="card">
                     <div class="card-body px-4">
 
-                        <form class="row" action="<?= base_url('admin/tickets/settings') ?>" method="POST"
+                        <form class="row" action="<?= route_to('settings.tickets.save') ?>" method="POST"
                             id="settingsForm" enctype="multipart/form-data">
                             <div class="col-lg-8">
                                 <!-- Configuración del Producto -->
@@ -536,5 +536,35 @@ $isBankTab = in_array($lastAction, $bankActions);
 
         new bootstrap.Modal(document.getElementById('deleteModal')).show();
     });
+</script>
+<script>
+document.getElementById('settingsForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const form = e.target;
+    const formData = new FormData(form);
+
+    try {
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            alert(data.message);
+            // opcional: recargar
+            location.reload();
+        } else {
+            console.error(data.errors);
+            alert('Error en el formulario');
+        }
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error del servidor');
+    }
+});
 </script>
 <?= $this->endSection() ?>

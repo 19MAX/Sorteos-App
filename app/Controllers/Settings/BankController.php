@@ -8,6 +8,7 @@ class BankController extends BaseController
 {
 
     protected $bankModel;
+    protected $redirectRoute = 'admin/settings/config';
 
     public function __construct()
     {
@@ -36,7 +37,7 @@ class BankController extends BaseController
 
             if ($this->bankModel->insert($data) === false) {
                 return redirectView(
-                    'admin/settings/config',
+                    $this->redirectRoute,
                     $this->bankModel->errors(),
                     [['Revisa los campos del formulario', 'warning', 'top-end']],
                     $this->request->getPost(), // ✅ Datos para repoblar
@@ -45,7 +46,7 @@ class BankController extends BaseController
             }
 
             return redirectView(
-                'admin/settings/config',
+                $this->redirectRoute,
                 null,
                 [['Banco creado exitosamente', 'success', 'top-end']]
             );
@@ -53,7 +54,7 @@ class BankController extends BaseController
         } catch (\Exception $e) {
             log_message('error', 'Error en BankController::create: ' . $e->getMessage());
             return redirectView(
-                'admin/settings/config',
+                $this->redirectRoute,
                 'Ocurrió un error inesperado al crear el banco.',
                 [['Error del servidor', 'error', 'top-end']]
             );
@@ -67,7 +68,7 @@ class BankController extends BaseController
             $bank = $this->bankModel->find($id);
             if (!$bank) {
                 return redirectView(
-                    'admin/settings/config',
+                    $this->redirectRoute,
                     null,
                     [['Banco no encontrado', 'error', 'top-end']]
                 );
@@ -98,7 +99,7 @@ class BankController extends BaseController
 
             if ($this->bankModel->update($id, $data) === false) {
                 return redirectView(
-                    'admin/settings/config',
+                    $this->redirectRoute,
                     $this->bankModel->errors(),
                     [['Revisa los campos del formulario', 'warning', 'top-end']],
                     array_merge($this->request->getPost(), ['id' => $id]),
@@ -107,7 +108,7 @@ class BankController extends BaseController
             }
 
             return redirectView(
-                'admin/settings/config',
+                $this->redirectRoute,
                 null,
                 [['Banco actualizado exitosamente', 'success', 'top-end']]
             );
@@ -115,7 +116,7 @@ class BankController extends BaseController
         } catch (\Exception $e) {
             log_message('error', 'BankController::update - ' . $e->getMessage());
             return redirectView(
-                'admin/settings/config',
+                $this->redirectRoute,
                 'Ocurrió un error inesperado al actualizar el banco.',
                 [['Error del servidor', 'error', 'top-end']]
             );
@@ -128,7 +129,7 @@ class BankController extends BaseController
             $bank = $this->bankModel->find($id);
             if (!$bank) {
                 return redirectView(
-                    'admin/settings/config',
+                    $this->redirectRoute,
                     null,
                     [['Banco no encontrado', 'error', 'top-end']]
                 );
@@ -136,7 +137,7 @@ class BankController extends BaseController
 
             if ($this->bankModel->delete($id) === false) {
                 return redirectView(
-                    'admin/settings/config',
+                    $this->redirectRoute,
                     null,
                     [['No se pudo eliminar el banco', 'error', 'top-end']]
                 );
@@ -151,7 +152,7 @@ class BankController extends BaseController
             }
 
             return redirectView(
-                'admin/settings/config',
+                $this->redirectRoute,
                 null,
                 [['Banco eliminado exitosamente', 'success', 'top-end']]
             );
@@ -159,7 +160,7 @@ class BankController extends BaseController
         } catch (\Exception $e) {
             log_message('error', 'BankController::delete - ' . $e->getMessage());
             return redirectView(
-                'admin/settings/config',
+                $this->redirectRoute,
                 'Ocurrió un error inesperado al eliminar el banco.',
                 [['Error del servidor', 'error', 'top-end']]
             );
