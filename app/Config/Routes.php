@@ -6,6 +6,8 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 $routes->get('/', 'Home\HomeController::index');
+$routes->get('/comprar', 'Home\HomeController::comprar');
+$routes->get('/mis-boletos', 'Home\HomeController::misBoletos');
 
 $routes->get('/login', 'Auth\LoginController::index');
 $routes->get('/logout', 'Auth\LoginController::index');
