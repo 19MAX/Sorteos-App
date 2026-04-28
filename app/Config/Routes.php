@@ -23,3 +23,8 @@ $routes->group('admin', function ($routes) {
         $routes->post('tickets/settings', 'Settings\ConfigController::save', ['as' => 'settings.tickets.save']);
     });
 });
+
+// Rutas API
+$routes->group('api', function ($routes) {
+    $routes->post('cedula', 'Home\HomeController::cedula');
+});

@@ -66,6 +66,45 @@
             border-color: var(--gold);
             background-color: rgba(245, 197, 24, 0.05);
         }
+
+        /* Skeleton loader */
+        .skeleton {
+            background: linear-gradient(90deg,
+                    rgba(255, 255, 255, 0.05) 25%,
+                    rgba(255, 255, 255, 0.15) 37%,
+                    rgba(255, 255, 255, 0.05) 63%);
+            background-size: 400% 100%;
+            animation: shimmer 1.4s ease infinite;
+            color: transparent !important;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 100% 0
+            }
+
+            100% {
+                background-position: -100% 0
+            }
+        }
+
+        .input-error {
+            border-color: #ef4444 !important;
+        }
+
+        .input-success {
+            border-color: #22c55e !important;
+        }
+
+        .input-message {
+            font-size: 12px;
+            margin-top: 4px;
+            color: #ef4444;
+        }
+
+        .input-message.hidden {
+            display: none;
+        }
     </style>
 </head>
 
@@ -133,24 +172,29 @@
             <form id="form-datos" class="space-y-4">
                 <div class="grid md:grid-cols-2 gap-4">
                     <div class="space-y-2">
+                        <label class="text-xs font-bold text-brand-muted uppercase">Cédula</label>
+                        <input type="text" name="cedula" maxlength="10" inputmode="numeric" pattern="[0-9]*"
+                            maxlength="10" required
+                            class="w-full bg-brand-card border border-gray-800 rounded-xl px-4 py-3 focus:border-brand-gold outline-none">
+                        <p class="input-message hidden" data-error="cedula"></p>
+                    </div>
+                    <div class="space-y-2">
                         <label class="text-xs font-bold text-brand-muted uppercase">Nombre Completo</label>
                         <input type="text" name="nombre" required
                             class="w-full bg-brand-card border border-gray-800 rounded-xl px-4 py-3 focus:border-brand-gold outline-none">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-xs font-bold text-brand-muted uppercase">Cédula / ID</label>
-                        <input type="text" name="cedula" required
-                            class="w-full bg-brand-card border border-gray-800 rounded-xl px-4 py-3 focus:border-brand-gold outline-none">
+                        <p class="input-message hidden" data-error="nombre"></p>
                     </div>
                     <div class="space-y-2">
                         <label class="text-xs font-bold text-brand-muted uppercase">Correo Electrónico</label>
                         <input type="email" name="email" required
                             class="w-full bg-brand-card border border-gray-800 rounded-xl px-4 py-3 focus:border-brand-gold outline-none">
+                        <p class="input-message hidden" data-error="email"></p>
                     </div>
                     <div class="space-y-2">
-                        <label class="text-xs font-bold text-brand-muted uppercase">WhatsApp</label>
+                        <label class="text-xs font-bold text-brand-muted uppercase">Numero de teléfono</label>
                         <input type="tel" name="whatsapp" required
                             class="w-full bg-brand-card border border-gray-800 rounded-xl px-4 py-3 focus:border-brand-gold outline-none">
+                        <p class="input-message hidden" data-error="whatsapp"></p>
                     </div>
                 </div>
 
@@ -369,7 +413,12 @@
         </div>
 
     </main>
-
+    <script>
+        const CSRF = {
+            name: '<?= csrf_token() ?>',
+            hash: '<?= csrf_hash() ?>'
+        };
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
@@ -426,6 +475,91 @@
                             : '-';
             }
 
+            // =====================
+            // VALIDACIONES
+            // =====================
+
+            function setError(input, message) {
+                input.classList.add('input-error');
+                input.classList.remove('input-success');
+
+                const errorEl = document.querySelector(`[data-error="${input.name}"]`);
+                errorEl.textContent = message;
+                errorEl.classList.remove('hidden');
+            }
+
+            function clearError(input) {
+                input.classList.remove('input-error');
+                input.classList.add('input-success');
+
+                const errorEl = document.querySelector(`[data-error="${input.name}"]`);
+                errorEl.textContent = '';
+                errorEl.classList.add('hidden');
+            }
+
+            function validarCampo(input) {
+                const value = input.value.trim();
+
+                // CÉDULA
+                if (input.name === 'cedula') {
+                    if (!value) return setError(input, 'La cédula es obligatoria');
+                    if (!/^\d{10}$/.test(value)) return setError(input, 'Debe tener 10 números');
+                }
+
+                // TELÉFONO
+                if (input.name === 'whatsapp') {
+                    if (!value) return setError(input, 'El teléfono es obligatorio');
+                    if (!/^\d{10}$/.test(value)) return setError(input, 'Debe tener 10 números');
+                }
+
+                // NOMBRE
+                if (input.name === 'nombre') {
+                    if (!value) return setError(input, 'El nombre es obligatorio');
+                    if (value.length < 3) return setError(input, 'Nombre muy corto');
+                }
+
+                // EMAIL
+                if (input.name === 'email') {
+                    if (!value) return setError(input, 'El correo es obligatorio');
+
+                    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!regex.test(value)) return setError(input, 'Correo inválido');
+                }
+
+                clearError(input);
+                return true;
+            }
+
+            const inputCedula = document.querySelector('[name="cedula"]');
+
+            inputCedula.addEventListener('input', (e) => {
+
+                // eliminar todo lo que no sea número
+                let value = e.target.value.replace(/\D/g, '');
+
+                // limitar a 10 caracteres
+                value = value.slice(0, 10);
+
+                e.target.value = value;
+
+                // guardar en ORDER
+                ORDER.cedula = value;
+                saveOrder();
+            });
+            inputCedula.addEventListener('keypress', (e) => {
+                if (!/[0-9]/.test(e.key)) {
+                    e.preventDefault();
+                }
+            });
+            const inputPhone = document.querySelector('[name="whatsapp"]');
+
+            inputPhone.addEventListener('input', (e) => {
+                let value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                e.target.value = value;
+
+                ORDER.whatsapp = value;
+                saveOrder();
+            });
             // =====================
             // UI
             // =====================
@@ -501,6 +635,113 @@
             }
 
             // =====================
+            // CONSULTA CÉDULA (AUTO)
+            // =====================
+
+            // debounce para no saturar API
+            function debounce(fn, delay = 600) {
+                let timeout;
+                return (...args) => {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => fn(...args), delay);
+                };
+            }
+
+            const inputNombre = document.querySelector('[name="nombre"]');
+            const inputEmail = document.querySelector('[name="email"]');
+            const inputWhatsapp = document.querySelector('[name="whatsapp"]');
+
+            // función principal
+            async function consultarCedula(cedula) {
+
+                try {
+
+                    showSkeleton();
+
+                    const body = {
+                        cedula: cedula
+                    };
+
+                    // agregar csrf dinámicamente
+                    body[CSRF.name] = CSRF.hash;
+
+                    const res = await fetch("<?= base_url('api/cedula') ?>", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(body)
+                    });
+
+                    const data = await res.json();
+
+                    // actualizar token SIEMPRE
+                    if (data.csrfHash) {
+                        CSRF.hash = data.csrfHash;
+                    }
+
+                    if (!data || !data.nombre) {
+                        hideSkeleton();
+                        return;
+                    }
+
+                    if (!inputNombre.value) inputNombre.value = data.nombre || '';
+                    if (!inputEmail.value) inputEmail.value = data.email || '';
+                    if (!inputWhatsapp.value) inputWhatsapp.value = data.telefono || '';
+
+                    ORDER.nombre = inputNombre.value;
+                    ORDER.email = inputEmail.value;
+                    ORDER.whatsapp = inputWhatsapp.value;
+
+                    saveOrder();
+
+                } catch (err) {
+                    console.error(err);
+                } finally {
+                    hideSkeleton();
+                }
+            }
+
+            // debounce aplicado
+            const consultarDebounce = debounce((cedula) => {
+                consultarCedula(cedula);
+            }, 700);
+
+            // evento input
+            inputCedula.addEventListener('input', (e) => {
+
+                const cedula = e.target.value.trim();
+
+                // guardar en ORDER siempre
+                ORDER.cedula = cedula;
+                saveOrder();
+
+                // validar solo números
+                if (!/^\d+$/.test(cedula)) return;
+
+                // solo cuando tenga 10 dígitos
+                if (cedula.length === 10) {
+                    consultarDebounce(cedula);
+                }
+            });
+
+
+            function showSkeleton() {
+                ['nombre', 'email', 'whatsapp'].forEach(name => {
+                    const input = document.querySelector(`[name="${name}"]`);
+                    input.classList.add('skeleton');
+                    input.value = '';
+                });
+            }
+
+            function hideSkeleton() {
+                ['nombre', 'email', 'whatsapp'].forEach(name => {
+                    const input = document.querySelector(`[name="${name}"]`);
+                    input.classList.remove('skeleton');
+                });
+            }
+
+            // =====================
             // INIT
             // =====================
             loadOrder();
@@ -525,6 +766,8 @@
             // =====================
             document.querySelectorAll('#form-datos input').forEach(input => {
                 input.addEventListener('input', () => {
+                    validarCampo(input);
+
                     ORDER[input.name] = input.value;
                     saveOrder();
                 });
@@ -554,6 +797,16 @@
             // =====================
             formDatos.onsubmit = (e) => {
                 e.preventDefault();
+
+                let valido = true;
+
+                document.querySelectorAll('#form-datos input').forEach(input => {
+                    const ok = validarCampo(input);
+                    if (ok === undefined) valido = false;
+                });
+
+                if (!valido) return;
+
                 goToStep(2);
             };
 
