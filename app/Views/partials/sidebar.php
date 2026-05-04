@@ -10,8 +10,8 @@
         <li class="px-4 py-2"><small class="nav-text">Main</small></li>
         <li><a class="nav-link active" href="index.html"><i class="ti ti-home"></i><span
                     class="nav-text">Dashboard</span></a></li>
-        <li><a class="nav-link" href="inventory.html"><i class="ti ti-box-seam"></i><span
-                    class="nav-text">Inventory</span></a></li>
+        <li><a class="nav-link" href="<?= route_to('admin.tickets.generate') ?>"><i class="ti ti-box-seam"></i><span
+                    class="nav-text">Generar Boletos</span></a></li>
         <li><a class="nav-link" href="create-product.html"><i class="ti ti-plus"></i><span class="nav-text">Add
                     Product</span></a></li>
         <li><a class="nav-link" href="reports.html"><i class="ti ti-receipt"></i><span

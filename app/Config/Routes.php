@@ -15,6 +15,12 @@ $routes->get('/logout', 'Auth\LoginController::index');
 // Rutas protegidas
 $routes->group('admin', function ($routes) {
     $routes->get('/', 'Admin\DashboardController::index');
+
+    // Tickets
+    $routes->get('tickets/generate', 'Admin\TicketsController::index', ['as' => 'admin.tickets.generate']);
+    $routes->post('tickets/generate-process', 'Admin\TicketsController::generate', ['as' => 'admin.tickets.generate.process']);
+    $routes->get('tickets/data', 'Admin\TicketsController::data', ['as' => 'admin.tickets.data']);
+
     $routes->group('settings', function ($routes) {
         $routes->get('config', 'Settings\ConfigController::index', ['as' => 'settings.config']);
         $routes->post('bank/create', 'Settings\BankController::create', ['as' => 'settings.bank.create']);
