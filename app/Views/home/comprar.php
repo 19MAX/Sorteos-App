@@ -926,7 +926,7 @@
             // =====================
             async function sendOrderToBackend() {
                 try {
-                    const res = await fetch("<?= base_url('orden/crear') ?>", {
+                    const res = await fetch("<?= base_url('api/orden/crear') ?>", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(ORDER)

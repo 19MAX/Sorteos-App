@@ -33,4 +33,6 @@ $routes->group('admin', function ($routes) {
 // Rutas API
 $routes->group('api', function ($routes) {
     $routes->post('cedula', 'Home\HomeController::cedula');
+    $routes->post('orden/crear', 'Api\OrdenController::crear');
+    $routes->get('orden/verificar', 'Api\OrdenController::verificar');
 });
