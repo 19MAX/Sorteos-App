@@ -157,11 +157,9 @@ class OrdenController extends BaseController
                 'success' => true,
                 'message' => 'Reservación creada exitosamente',
                 'data' => [
-                    'transaccion_id' => $transaccionId,
+                    'numero_transaccion' => $transaccionId,
                     'boletos' => $qty,
-                    'total' => $total,
                     'expira_en' => self::RESERVATION_HOURS . ' horas',
-                    'participant_id' => $participant['id']
                 ],
                 'csrfHash' => csrf_hash()
             ]);
@@ -281,6 +279,33 @@ class OrdenController extends BaseController
 
         } catch (\Throwable $e) {
             log_message('error', 'Error en OrdenController::verificar: ' . $e->getMessage());
+
+            return $this->response
+                ->setStatusCode(500)
+                ->setJSON([
+                    'success' => false,
+                    'message' => 'Error interno del servidor'
+                ]);
+        }
+    }
+
+    public function disponibles()
+    {
+        try {
+            $availableCount = $this->ticketModel->getAvailableCount();
+            $maxTickets = $this->getMaxTickets();
+            $scarcityMode = $this->ticketModel->isScarcityMode();
+
+            return $this->response->setJSON([
+                'success' => true,
+                'data' => [
+                    'disponibles' => $availableCount,
+                    'max_por_transaccion' => $maxTickets,
+                    'modo_escasez' => $scarcityMode
+                ]
+            ]);
+        } catch (\Throwable $e) {
+            log_message('error', 'Error en OrdenController::disponibles: ' . $e->getMessage());
 
             return $this->response
                 ->setStatusCode(500)

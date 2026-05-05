@@ -7,6 +7,7 @@
     <title>Comprar Boletos | Quickluck</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -114,11 +115,14 @@
         const PRODUCT = {
             title: "<?= esc($titulo) ?>",
             ticketPrice: <?= (float) $precio ?>,
-            currency: "<?= esc($moneda) ?>"
+            currency: "<?= esc($moneda) ?>",
+            availableTickets: <?= (int) $boletos_disponibles ?>,
+            maxTickets: <?= (int) $max_boletos ?>,
+            minTickets: <?= (int) ($boletos_minimos ?? 1) ?>
         };
         let ORDER = {
-            qty: 1,
-            total: <?= (float) $precio ?>,
+            qty: <?= (int) ($boletos_minimos ?? 1) ?>,
+            total: <?= (float) $precio ?> * <?= (int) ($boletos_minimos ?? 1) ?>,
             method: null
         };
     </script>
@@ -205,7 +209,8 @@
                     <div class="flex items-center gap-6 justify-center">
                         <button type="button" id="qty-minus"
                             class="w-12 h-12 rounded-full border-2 border-brand-gold text-brand-gold text-2xl font-bold hover:bg-brand-gold hover:text-brand-dark transition-all">−</button>
-                        <span id="qty-display" class="text-5xl font-heading font-bold w-16">1</span>
+                        <span id="qty-display"
+                            class="text-5xl font-heading font-bold w-16"><?= (int) ($boletos_minimos ?? 1) ?></span>
                         <button type="button" id="qty-plus"
                             class="w-12 h-12 rounded-full border-2 border-brand-gold text-brand-gold text-2xl font-bold hover:bg-brand-gold hover:text-brand-dark transition-all">+</button>
                     </div>
@@ -393,573 +398,76 @@
 
         <!-- ═══ STEP 4: ÉXITO ═══ -->
         <div id="step-4" class="hidden text-center space-y-8 animate-bounce-in">
-            <div class="relative inline-block">
-                <div class="absolute inset-0 bg-brand-gold blur-3xl opacity-20 animate-pulse"></div>
-                <div
-                    class="relative w-24 h-24 bg-brand-gold text-brand-dark rounded-full flex items-center justify-center text-5xl mx-auto shadow-2xl">
-                    ✓</div>
+            <div id="step4-loading" class="space-y-6">
+                <div class="relative inline-block">
+                    <div class="absolute inset-0 bg-brand-gold blur-3xl opacity-20 animate-pulse"></div>
+                    <div class="relative w-24 h-24 mx-auto">
+                        <div class="absolute inset-0 border-4 border-brand-gold/30 rounded-full"></div>
+                        <div
+                            class="absolute inset-0 border-4 border-transparent rounded-full border-t-brand-gold animate-spin">
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <h1 class="text-3xl font-heading font-bold">Procesando tu solicitud...</h1>
+                    <p class="text-brand-muted max-w-sm mx-auto">Por favor espera mientras procesamos tu reservación.
+                    </p>
+                </div>
             </div>
-            <div class="space-y-2">
-                <h1 class="text-4xl font-heading font-bold">¡Solicitud Recibida!</h1>
-                <p class="text-brand-muted max-w-sm mx-auto">Hemos registrado tu pedido. Si pagaste por transferencia,
-                    validaremos tu comprobante pronto.</p>
-            </div>
-            <div class="pt-8 flex flex-col gap-4">
-                <a href="<?= base_url('mis-boletos') ?>"
-                    class="py-4 px-8 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-bold transition-all">Ver
-                    mis boletos</a>
-                <a href="<?= base_url() ?>" class="text-brand-gold font-bold">Volver al inicio</a>
+            <div id="step4-success" class="hidden space-y-6">
+                <div class="relative inline-block">
+                    <div class="absolute inset-0 bg-brand-gold blur-3xl opacity-20 animate-pulse"></div>
+                    <div
+                        class="relative w-24 h-24 bg-brand-gold text-brand-dark rounded-full flex items-center justify-center text-5xl mx-auto shadow-2xl">
+                        ✓</div>
+                </div>
+                <div class="space-y-2">
+                    <h1 class="text-4xl font-heading font-bold">¡Solicitud Recibida!</h1>
+                    <p class="text-brand-muted max-w-sm mx-auto">Hemos registrado tu pedido. Si pagaste por
+                        transferencia,
+                        validaremos tu comprobante pronto.</p>
+                </div>
+
+                <div id="txn-info"
+                    class="hidden bg-brand-card border border-white/10 rounded-2xl p-6 space-y-4 text-left max-w-sm mx-auto">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-brand-muted uppercase">N° Transacción</span>
+                        <span id="txn-numero" class="font-mono text-brand-gold text-sm font-bold"></span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-brand-muted uppercase">Boletos reservados</span>
+                        <span id="txn-boletos" class="font-bold"></span>
+                    </div>
+                    <div class="flex justify-between items-center border-t border-white/10 pt-4">
+                        <span class="text-xs font-bold text-brand-muted uppercase">Enviar comprobante antes de</span>
+                        <span id="txn-expira" class="font-bold text-orange-400"></span>
+                    </div>
+                    <p class="text-xs text-brand-muted text-center">⚠️ Tu reserva se cancelará si no enviamos el
+                        comprobante a tiempo.</p>
+                </div>
+
+                <div class="pt-6 flex flex-col gap-4">
+                    <a href="<?= base_url('mis-boletos') ?>"
+                        class="py-4 px-8 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-bold transition-all">Ver
+                        mis boletos</a>
+                    <button id="btn-volver-comprar" type="button"
+                        class="py-4 px-8 bg-gradient-to-r from-brand-gold to-orange-500 text-brand-dark font-bold rounded-xl hover:scale-[1.02] transition-all">
+                        Volver a comprar
+                    </button>
+                    <a href="<?= base_url() ?>" class="text-brand-gold font-bold">Volver al inicio</a>
+                </div>
             </div>
         </div>
 
     </main>
     <script>
+        const baseUrl = "<?= base_url() ?>";
         const CSRF = {
             name: '<?= csrf_token() ?>',
-            hash: '<?= csrf_hash() ?>'
+            hash: '<?= csrf_hash() ?>',
         };
     </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-
-            const STORAGE_KEY = 'quickluck_order';
-
-            const steps = {
-                1: document.getElementById('step-1'),
-                2: document.getElementById('step-2'),
-                3: document.getElementById('step-3'),
-                4: document.getElementById('step-4')
-            };
-
-            const formDatos = document.getElementById('form-datos');
-            const qtyDisplay = document.getElementById('qty-display');
-            const totalPrice = document.getElementById('total-price');
-
-            let ORDER = {
-                step: 1,
-                qty: 1,
-                total: PRODUCT.ticketPrice,
-                method: null
-            };
-
-            // =====================
-            // STORAGE
-            // =====================
-            function saveOrder() {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(ORDER));
-            }
-
-            function loadOrder() {
-                const data = localStorage.getItem(STORAGE_KEY);
-                if (data) {
-                    ORDER = JSON.parse(data);
-                }
-            }
-
-            function clearOrder() {
-                localStorage.removeItem(STORAGE_KEY);
-            }
-
-            function updateSummary() {
-                document.getElementById('summary-name').textContent = ORDER.nombre || '-';
-                document.getElementById('summary-cedula').textContent = ORDER.cedula || '-';
-                document.getElementById('summary-whatsapp').textContent = ORDER.whatsapp || '-';
-                document.getElementById('summary-qty').textContent = ORDER.qty || 1;
-                document.getElementById('summary-total').textContent = `$${(ORDER.total || 0).toFixed(2)}`;
-
-                document.getElementById('summary-method').textContent =
-                    ORDER.method === 'deposit'
-                        ? 'Depósito / Transferencia'
-                        : ORDER.method === 'card'
-                            ? 'Tarjeta'
-                            : '-';
-            }
-
-            // =====================
-            // VALIDACIONES
-            // =====================
-
-            function setError(input, message) {
-                input.classList.add('input-error');
-                input.classList.remove('input-success');
-
-                const errorEl = document.querySelector(`[data-error="${input.name}"]`);
-                errorEl.textContent = message;
-                errorEl.classList.remove('hidden');
-            }
-
-            function clearError(input) {
-                input.classList.remove('input-error');
-                input.classList.add('input-success');
-
-                const errorEl = document.querySelector(`[data-error="${input.name}"]`);
-                errorEl.textContent = '';
-                errorEl.classList.add('hidden');
-            }
-
-            function validarCampo(input) {
-                const value = input.value.trim();
-
-                // CÉDULA
-                if (input.name === 'cedula') {
-                    if (!value) return setError(input, 'La cédula es obligatoria');
-                    if (!/^\d{10}$/.test(value)) return setError(input, 'Debe tener 10 números');
-                }
-
-                // TELÉFONO
-                if (input.name === 'whatsapp') {
-                    if (!value) return setError(input, 'El teléfono es obligatorio');
-                    if (!/^\d{10}$/.test(value)) return setError(input, 'Debe tener 10 números');
-                }
-
-                // NOMBRE
-                if (input.name === 'nombre') {
-                    if (!value) return setError(input, 'El nombre es obligatorio');
-                    if (value.length < 3) return setError(input, 'Nombre muy corto');
-                }
-
-                // EMAIL
-                if (input.name === 'email') {
-                    if (!value) return setError(input, 'El correo es obligatorio');
-
-                    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    if (!regex.test(value)) return setError(input, 'Correo inválido');
-                }
-
-                clearError(input);
-                return true;
-            }
-
-            const inputCedula = document.querySelector('[name="cedula"]');
-
-            inputCedula.addEventListener('input', (e) => {
-
-                // eliminar todo lo que no sea número
-                let value = e.target.value.replace(/\D/g, '');
-
-                // limitar a 10 caracteres
-                value = value.slice(0, 10);
-
-                e.target.value = value;
-
-                // guardar en ORDER
-                ORDER.cedula = value;
-                saveOrder();
-            });
-            inputCedula.addEventListener('keypress', (e) => {
-                if (!/[0-9]/.test(e.key)) {
-                    e.preventDefault();
-                }
-            });
-            const inputPhone = document.querySelector('[name="whatsapp"]');
-
-            inputPhone.addEventListener('input', (e) => {
-                let value = e.target.value.replace(/\D/g, '').slice(0, 10);
-                e.target.value = value;
-
-                ORDER.whatsapp = value;
-                saveOrder();
-            });
-            // =====================
-            // UI
-            // =====================
-            function updatePrice() {
-                ORDER.total = ORDER.qty * PRODUCT.ticketPrice;
-                totalPrice.textContent = `$${ORDER.total.toFixed(2)}`;
-            }
-
-            function goToStep(step) {
-                if (step === 3) updateSummary();
-                Object.values(steps).forEach(s => s.classList.add('hidden'));
-                steps[step].classList.remove('hidden');
-                ORDER.step = step;
-                updateNav(step);
-                saveOrder();
-            }
-
-            function updateNav(step) {
-                document.querySelectorAll('[id^="nav-step-"]').forEach((el, idx) => {
-                    const dot = el.querySelector('div');
-                    const label = el.querySelector('span');
-
-                    dot.classList.remove('step-dot-active');
-                    label.classList.remove('step-active');
-
-                    if (idx + 1 <= step) {
-                        dot.classList.add('step-dot-active');
-                        label.classList.add('step-active');
-                    }
-                });
-            }
-
-            function restoreUI() {
-                // Inputs
-                document.querySelector('[name="nombre"]').value = ORDER.nombre || '';
-                document.querySelector('[name="cedula"]').value = ORDER.cedula || '';
-                document.querySelector('[name="email"]').value = ORDER.email || '';
-                document.querySelector('[name="whatsapp"]').value = ORDER.whatsapp || '';
-
-                // Qty
-                qtyDisplay.textContent = ORDER.qty || 1;
-                updatePrice();
-
-                // Método
-                if (ORDER.method) {
-                    document.querySelectorAll('.payment-card').forEach(c => {
-                        c.classList.remove('payment-card-selected');
-                    });
-
-                    const card = document.querySelector(`[onclick*="${ORDER.method}"]`);
-                    if (card) card.classList.add('payment-card-selected');
-
-                    document.getElementById('bank-info')
-                        .classList.toggle('hidden', ORDER.method !== 'deposit');
-
-                    enableContinue();
-                }
-
-
-                if (ORDER.step === 3) {
-                    updateSummary();
-                }
-
-
-                goToStep(ORDER.step || 1);
-            }
-
-            function enableContinue() {
-                const btn = document.getElementById('btn-goto-3');
-                btn.disabled = false;
-                btn.classList.remove('bg-gray-800', 'text-gray-500', 'cursor-not-allowed');
-                btn.classList.add('bg-brand-gold', 'text-brand-dark');
-            }
-
-            // =====================
-            // CONSULTA CÉDULA (AUTO)
-            // =====================
-
-            // debounce para no saturar API
-            function debounce(fn, delay = 600) {
-                let timeout;
-                return (...args) => {
-                    clearTimeout(timeout);
-                    timeout = setTimeout(() => fn(...args), delay);
-                };
-            }
-
-            const inputNombre = document.querySelector('[name="nombre"]');
-            const inputEmail = document.querySelector('[name="email"]');
-            const inputWhatsapp = document.querySelector('[name="whatsapp"]');
-
-            // función principal
-            async function consultarCedula(cedula) {
-
-                try {
-
-                    showSkeleton();
-
-                    const body = {
-                        cedula: cedula
-                    };
-
-                    // agregar csrf dinámicamente
-                    body[CSRF.name] = CSRF.hash;
-
-                    const res = await fetch("<?= base_url('api/cedula') ?>", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify(body)
-                    });
-
-                    const data = await res.json();
-
-                    // actualizar token SIEMPRE
-                    if (data.csrfHash) {
-                        CSRF.hash = data.csrfHash;
-                    }
-
-                    if (!data || !data.nombre) {
-                        hideSkeleton();
-                        return;
-                    }
-
-                    if (!inputNombre.value) inputNombre.value = data.nombre || '';
-                    if (!inputEmail.value) inputEmail.value = data.email || '';
-                    if (!inputWhatsapp.value) inputWhatsapp.value = data.telefono || '';
-
-                    ORDER.nombre = inputNombre.value;
-                    ORDER.email = inputEmail.value;
-                    ORDER.whatsapp = inputWhatsapp.value;
-
-                    saveOrder();
-
-                } catch (err) {
-                    console.error(err);
-                } finally {
-                    hideSkeleton();
-                }
-            }
-
-            // debounce aplicado
-            const consultarDebounce = debounce((cedula) => {
-                consultarCedula(cedula);
-            }, 700);
-
-            // evento input
-            inputCedula.addEventListener('input', (e) => {
-
-                const cedula = e.target.value.trim();
-
-                // guardar en ORDER siempre
-                ORDER.cedula = cedula;
-                saveOrder();
-
-                // validar solo números
-                if (!/^\d+$/.test(cedula)) return;
-
-                // solo cuando tenga 10 dígitos
-                if (cedula.length === 10) {
-                    consultarDebounce(cedula);
-                }
-            });
-
-
-            function showSkeleton() {
-                ['nombre', 'email', 'whatsapp'].forEach(name => {
-                    const input = document.querySelector(`[name="${name}"]`);
-                    input.classList.add('skeleton');
-                    input.value = '';
-                });
-            }
-
-            function hideSkeleton() {
-                ['nombre', 'email', 'whatsapp'].forEach(name => {
-                    const input = document.querySelector(`[name="${name}"]`);
-                    input.classList.remove('skeleton');
-                });
-            }
-
-            // =====================
-            // INIT
-            // =====================
-            loadOrder();
-            restoreUI();
-
-            // =====================
-            // NAV CLICK
-            // =====================
-            document.querySelectorAll('[id^="nav-step-"]').forEach(el => {
-                el.addEventListener('click', () => {
-                    const step = parseInt(el.dataset.step);
-
-                    if (step === 2 && !ORDER.nombre) return;
-                    if (step === 3 && !ORDER.method) return;
-
-                    goToStep(step);
-                });
-            });
-
-            // =====================
-            // FORM INPUTS
-            // =====================
-            document.querySelectorAll('#form-datos input').forEach(input => {
-                input.addEventListener('input', () => {
-                    validarCampo(input);
-
-                    ORDER[input.name] = input.value;
-                    saveOrder();
-                });
-            });
-
-            // =====================
-            // QTY
-            // =====================
-            document.getElementById('qty-plus').onclick = () => {
-                ORDER.qty++;
-                qtyDisplay.textContent = ORDER.qty;
-                updatePrice();
-                saveOrder();
-            };
-
-            document.getElementById('qty-minus').onclick = () => {
-                if (ORDER.qty > 1) {
-                    ORDER.qty--;
-                    qtyDisplay.textContent = ORDER.qty;
-                    updatePrice();
-                    saveOrder();
-                }
-            };
-
-            // =====================
-            // FORM SUBMIT
-            // =====================
-            formDatos.onsubmit = (e) => {
-                e.preventDefault();
-
-                let valido = true;
-
-                document.querySelectorAll('#form-datos input').forEach(input => {
-                    const ok = validarCampo(input);
-                    if (ok === undefined) valido = false;
-                });
-
-                if (!valido) return;
-
-                goToStep(2);
-            };
-
-            // =====================
-            // LOGICA DE BANCOS
-            // =====================
-            window.selectBank = (index) => {
-                // 1. Limpiar estilos de todos los botones
-                document.querySelectorAll('.bank-selector-btn').forEach(btn => {
-                    btn.classList.remove('ring-2', 'ring-brand-gold', 'border-transparent');
-                    btn.classList.add('border-white/5');
-
-                    const img = btn.querySelector('.bank-logo-img');
-                    if (img) img.classList.add('grayscale');
-                });
-
-                // 2. Aplicar estilo al botón seleccionado
-                const selectedBtn = document.querySelector(`.bank-selector-btn[data-bank-id="${index}"]`);
-                if (selectedBtn) {
-                    selectedBtn.classList.remove('border-white/5');
-                    selectedBtn.classList.add('ring-2', 'ring-brand-gold', 'border-transparent');
-
-                    const img = selectedBtn.querySelector('.bank-logo-img');
-                    if (img) img.classList.remove('grayscale');
-                }
-
-                // 3. Ocultar todos los paneles y el estado vacío
-                document.querySelectorAll('.bank-detail-panel').forEach(panel => {
-                    panel.classList.add('hidden');
-                });
-                document.getElementById('bank-empty-state').classList.add('hidden');
-
-                // 4. Mostrar el panel correspondiente
-                const selectedPanel = document.getElementById(`bank-detail-${index}`);
-                if (selectedPanel) {
-                    selectedPanel.classList.remove('hidden');
-                }
-            };
-
-            window.copyToClipboard = (text) => {
-                navigator.clipboard.writeText(text).then(() => {
-                    alert('¡Número de cuenta copiado al portapapeles!');
-                }).catch(err => {
-                    console.error('Error al copiar: ', err);
-                });
-            };
-
-            // =====================
-            // PAYMENT METHOD
-            // =====================
-            window.selectMethod = (method, el) => {
-                ORDER.method = method;
-
-                document.querySelectorAll('.payment-card')
-                    .forEach(c => c.classList.remove('payment-card-selected'));
-
-                el.classList.add('payment-card-selected');
-
-                document.getElementById('bank-info')
-                    .classList.toggle('hidden', method !== 'deposit');
-
-                enableContinue();
-                saveOrder();
-            };
-
-            // =====================
-            // BUTTONS
-            // =====================
-            document.getElementById('btn-back-1').onclick = () => goToStep(1);
-            document.getElementById('btn-back-2').onclick = () => goToStep(2);
-
-            document.getElementById('btn-goto-3').onclick = () => {
-
-                updateSummary();
-                goToStep(3);
-            };
-
-            document.getElementById('terms').onchange = (e) => {
-                document.getElementById('btn-finalizar').disabled = !e.target.checked;
-            };
-
-            // =====================
-            // FINALIZAR
-            // =====================
-            document.getElementById('btn-finalizar').onclick = async () => {
-
-                const btn = document.getElementById('btn-finalizar');
-
-                // PRELOADER
-                btn.disabled = true;
-                btn.innerHTML = 'Procesando...';
-                btn.classList.add('opacity-70');
-
-                if (ORDER.method === 'deposit') {
-
-                    const res = await sendOrderToBackend();
-
-                    if (res && res.success) {
-                        clearOrder();
-                        goToStep(4);
-                    } else {
-                        alert('Error al procesar la solicitud');
-                        btn.disabled = false;
-                        btn.innerHTML = 'Confirmar →';
-                        btn.classList.remove('opacity-70');
-                    }
-                }
-
-                if (ORDER.method === 'card') {
-                    clearOrder();
-                    iniciarPagoPayphone();
-                }
-            };
-
-            // =====================
-            // BACKEND
-            // =====================
-            async function sendOrderToBackend() {
-                try {
-                    const res = await fetch("<?= base_url('api/orden/crear') ?>", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(ORDER)
-                    });
-
-                    const data = await res.json();
-
-                    return data;
-
-                } catch (err) {
-                    console.error(err);
-                    return { success: false };
-                }
-            }
-
-            async function iniciarPagoPayphone() {
-                try {
-                    const res = await fetch("<?= base_url('payphone/pagar') ?>", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(ORDER)
-                    });
-
-                    const data = await res.json();
-                    if (data.url) window.location.href = data.url;
-
-                } catch (err) {
-                    console.error(err);
-                }
-            }
-
-        });
-    </script>
+    <script src="<?= base_url('assets/js/home/comprar.js') ?>"></script>
 </body>
 
 </html>

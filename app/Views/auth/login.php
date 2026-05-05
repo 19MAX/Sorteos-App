@@ -8,14 +8,20 @@
         <span class=" ms-2"> <img src="./assets/images/logo.svg" alt=""></span>
     </a>
     <h1 class="card-title mb-5 h5">Sign in to your account</h1>
-
 </div>
 
-<form class="needs-validation mt-3" novalidate>
+<?php if (session()->getFlashdata('error')): ?>
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <?= session()->getFlashdata('error') ?>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<?php endif; ?>
+
+<form class="needs-validation mt-3" method="POST" action="<?= site_url('/login') ?>" novalidate>
     <div class="mb-3">
-        <label for="email" class="form-label">Email address</label>
-        <input id="email" type="email" class="form-control" placeholder="name@example.com" required autofocus>
-        <div class="invalid-feedback">Please enter a valid email.</div>
+        <label for="username" class="form-label">Username</label>
+        <input id="username" name="username" type="text" class="form-control" placeholder="Enter your username" required autofocus>
+        <div class="invalid-feedback">Please enter your username.</div>
     </div>
 
     <div class="mb-3">
@@ -23,7 +29,7 @@
             <span>Password</span>
             <a href="#" class="small link-primary">Forgot Password?</a>
         </label>
-        <input id="password" type="password" class="form-control" placeholder="Password" required minlength="6">
+        <input id="password" name="password" type="password" class="form-control" placeholder="Password" required minlength="6">
         <div class="invalid-feedback">Please provide a password (min 6 characters).</div>
     </div>
 

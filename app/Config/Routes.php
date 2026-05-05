@@ -10,16 +10,23 @@ $routes->get('/comprar', 'Home\HomeController::comprar');
 $routes->get('/mis-boletos', 'Home\HomeController::misBoletos');
 
 $routes->get('/login', 'Auth\LoginController::index');
-$routes->get('/logout', 'Auth\LoginController::index');
+$routes->post('/login', 'Auth\LoginController::login');
+$routes->get('/logout', 'Auth\LoginController::logout');
 
 // Rutas protegidas
-$routes->group('admin', function ($routes) {
+$routes->group('admin', ['filter' => 'adminauth'], function ($routes) {
     $routes->get('/', 'Admin\DashboardController::index');
 
     // Tickets
     $routes->get('tickets/generate', 'Admin\TicketsController::index', ['as' => 'admin.tickets.generate']);
     $routes->post('tickets/generate-process', 'Admin\TicketsController::generate', ['as' => 'admin.tickets.generate.process']);
     $routes->get('tickets/data', 'Admin\TicketsController::data', ['as' => 'admin.tickets.data']);
+
+    // Transactions
+    $routes->get('transactions', 'Admin\TransactionController::index', ['as' => 'admin.transactions.index']);
+    $routes->post('transactions/mark-as-paid', 'Admin\TransactionController::markAsPaid', ['as' => 'admin.transactions.markAsPaid']);
+    $routes->post('transactions/reject', 'Admin\TransactionController::reject', ['as' => 'admin.transactions.reject']);
+    $routes->post('transactions/expire-expired', 'Admin\TransactionController::expireExpired', ['as' => 'admin.transactions.expireExpired']);
 
     $routes->group('settings', function ($routes) {
         $routes->get('config', 'Settings\ConfigController::index', ['as' => 'settings.config']);
@@ -35,4 +42,5 @@ $routes->group('api', function ($routes) {
     $routes->post('cedula', 'Home\HomeController::cedula');
     $routes->post('orden/crear', 'Api\OrdenController::crear');
     $routes->get('orden/verificar', 'Api\OrdenController::verificar');
+    $routes->get('tickets/disponibles', 'Api\OrdenController::disponibles');
 });

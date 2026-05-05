@@ -58,7 +58,7 @@ $isBankTab = in_array($lastAction, $bankActions);
                                             <input type="text" class="form-control" id="nombre_producto"
                                                 name="nombre_producto"
                                                 value="<?= esc($settings['nombre_producto'] ?? '') ?>"
-                                                placeholder="Ej: Honda Civic 2024" required>
+                                                required>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -67,7 +67,7 @@ $isBankTab = in_array($lastAction, $bankActions);
                                                 Boletos</label>
                                             <input type="number" class="form-control" id="total_boletos"
                                                 name="total_boletos" value="<?= $settings['total_boletos'] ?? '' ?>"
-                                                min="1" max="1000000" placeholder="Ej: 10000" required>
+                                                min="1" max="1000000" required>
                                         </div>
                                     </div>
                                 </div>
@@ -81,7 +81,7 @@ $isBankTab = in_array($lastAction, $bankActions);
                                                 ($)</label>
                                             <input type="number" class="form-control" id="precio_boleto"
                                                 name="precio_boleto" value="<?= $settings['precio_boleto'] ?? '' ?>"
-                                                min="0.01" step="0.01" placeholder="Ej: 5.00" required>
+                                                min="0.01" step="0.01" required>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -90,7 +90,7 @@ $isBankTab = in_array($lastAction, $bankActions);
                                                 boletos</label>
                                             <input type="number" class="form-control" id="boletos_minimos"
                                                 name="boletos_minimos" value="<?= $settings['boletos_minimos'] ?? '' ?>"
-                                                min="1" step="1" placeholder="Ej: 10" required>
+                                                min="1" step="1" required>
                                         </div>
                                     </div>
                                 </div>
@@ -101,8 +101,7 @@ $isBankTab = in_array($lastAction, $bankActions);
                                             <label for="descripcion_producto" class="form-label">Descripción
                                                 del Producto</label>
                                             <textarea class="form-control" id="descripcion_producto"
-                                                name="descripcion_producto" rows="3"
-                                                placeholder="Descripción detallada del producto..."><?= esc($settings['descripcion_producto'] ?? '') ?></textarea>
+                                                name="descripcion_producto" rows="3"><?= esc($settings['descripcion_producto'] ?? '') ?></textarea>
                                         </div>
                                     </div>
                                 </div>

@@ -36,7 +36,7 @@ class CleanupExpiredTickets extends BaseCommand
 
         $releasedReservations = $ticketModel->cleanupExpiredReservations();
         CLI::write("Reservas expiradas liberadas: {$releasedReservations}", 'green');
-
+        $total = $count + $releasedReservations;
         if ($total > 0) {
             CLI::write("Total de elementos procesados: {$total}", 'green');
         } else {

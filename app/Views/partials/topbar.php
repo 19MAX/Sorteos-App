@@ -81,30 +81,16 @@
                         <div class="d-flex gap-3 align-items-center border-dashed border-bottom px-3 py-3">
                             <img src="./assets/images/avatar-1.jpg" alt="" class="avatar avatar-md rounded-circle" />
                             <div>
-                                <h4 class="mb-0 small">Shrina Tesla</h4>
-                                <p class="mb-0  small">@imshrina</p>
+                                <h4 class="mb-0 small"><?= esc(session()->get('admin_nombre') ?? 'Admin') ?></h4>
+                                <p class="mb-0  small">@<?= esc(session()->get('admin_username') ?? 'admin') ?></p>
                             </div>
                         </div>
                         <div class="p-3 d-flex flex-column gap-1 small lh-lg">
-                            <a href="#!" class="">
-
-                                <span>Home</span>
+                            <a href="<?= site_url('/admin') ?>">
+                                <span>Dashboard</span>
                             </a>
-                            <a href="#!" class="">
-
-                                <span> Inbox</span>
-                            </a>
-                            <a href="#!" class="">
-
-                                <span> Chat</span>
-                            </a>
-                            <a href="#!" class="">
-
-                                <span> Activity</span>
-                            </a>
-                            <a href="#!" class="">
-
-                                <span> Account Settings</span>
+                            <a href="<?= site_url('/logout') ?>">
+                                <span>Logout</span>
                             </a>
                         </div>
 

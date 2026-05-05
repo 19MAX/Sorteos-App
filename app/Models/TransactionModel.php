@@ -34,7 +34,7 @@ class TransactionModel extends Model
         'cantidad_boletos'  => 'required|is_natural',
         'total'            => 'required|decimal',
         'metodo_pago'       => 'required|in_list[fisico,transferencia,tarjeta]',
-        'status'           => 'required|in_list[pendiente,completada,rechazada,cancelado,expirado]',
+        'status'           => 'required|in_list[pendiente,completado,rechazada,cancelado,expirado]',
     ];
 
     protected $validationMessages   = [];
@@ -96,7 +96,7 @@ class TransactionModel extends Model
     public function markAsCompleted(int $id, ?int $adminId = null): bool
     {
         return $this->update($id, [
-            'status'       => 'completada',
+            'status'       => 'completado',
             'admin_id'     => $adminId,
             'completed_at' => date('Y-m-d H:i:s'),
         ]) !== false;

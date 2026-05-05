@@ -10,7 +10,6 @@ class UsersSeeder extends Seeder
     {
         $adminPassword = password_hash(env('SEEDER_ADMIN_PASSWORD'), PASSWORD_DEFAULT);
 
-        // Crear administrador por defecto
         $adminData = [
             'username' => 'admin',
             'password' => $adminPassword,
@@ -18,10 +17,11 @@ class UsersSeeder extends Seeder
             'email' => env('SEEDER_ADMIN_EMAIL'),
             'is_superadmin' => 1,
             'last_login' => date('Y-m-d H:i:s'),
-            // 'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s')
         ];
 
-        $this->db->table('admins')->insert($adminData);
+        $builder = $this->db->table('admins');
+            $builder->insert($adminData);
+        
     }
 }

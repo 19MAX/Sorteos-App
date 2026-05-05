@@ -68,6 +68,16 @@ class TicketModel extends Model
         return ($this->getAvailableCount() / $total) * 100;
     }
 
+    public function getSoldPercentage(): float
+    {
+        $total = $this->getTotalCount();
+        if ($total === 0) {
+            return 0;
+        }
+        $sold = $this->whereIn('status', [self::STATUS_VENDIDO, self::STATUS_PAGADO, self::STATUS_ASIGNADO])->countAllResults();
+        return ($sold / $total) * 100;
+    }
+
     public function isScarcityMode(): bool
     {
         $percentage = $this->getAvailablePercentage();

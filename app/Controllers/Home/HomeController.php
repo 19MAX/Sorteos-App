@@ -4,19 +4,54 @@ namespace App\Controllers\Home;
 
 use App\Controllers\BaseController;
 use App\Models\BancosModel;
+use App\Models\ParticipantModel;
+use App\Models\SettingsModel;
+use App\Models\TicketModel;
 
 class HomeController extends BaseController
 {
+    private function getSettings(): array
+    {
+        $settingsModel = new SettingsModel();
+        $settings = $settingsModel->first();
+
+        if (!$settings) {
+            return [
+                'nombre_producto' => 'Samsung Galaxy S25 Ultra',
+                'descripcion_producto' => '512GB, Titanio Plateado. Nuevo en caja.',
+                'imagen_producto' => null,
+                'boletos_minimos' => 3,
+                'total_boletos' => 50000,
+                'precio_boleto' => 3.00,
+                'sorteo_activo' => 1,
+            ];
+        }
+
+        return $settings;
+    }
+
     public function index()
     {
+        $ticketModel = new TicketModel();
+        $settings = $this->getSettings();
+
+        $carrusel = [];
+        if (!empty($settings['imagen_producto'])) {
+            $carrusel = array_filter(array_map('trim', explode(',', $settings['imagen_producto'])));
+        }
+        if (empty($carrusel)) {
+            $carrusel = ['default.jpg'];
+        }
+
         $data = [
-            'titulo' => "Samsung Galaxy S25 Ultra",
-            'descripcion' => "512GB, Titanio Plateado. Nuevo en caja.",
-            'imagen' => "xyz789.jpg",
-            'carrusel' => ["c1.jpg", "c2.jpg", "c3.jpg"],
-            'precio' => 3.00,
-            'moneda' => "USD",
-            'porcentaje' => 0
+            'titulo' => $settings['nombre_producto'] ?? 'Samsung Galaxy S25 Ultra',
+            'descripcion' => $settings['descripcion_producto'] ?? '512GB, Titanio Plateado. Nuevo en caja.',
+            'imagen' => $carrusel[0] ?? 'default.jpg',
+            'carrusel' => $carrusel,
+            'precio' => (float) ($settings['precio_boleto'] ?? 3.00),
+            'moneda' => 'USD',
+            'boletos_minimos' => (int) ($settings['boletos_minimos'] ?? 3),
+            'porcentaje' => round($ticketModel->getSoldPercentage(), 0)
         ];
 
         return view('home/index', $data);
@@ -25,11 +60,17 @@ class HomeController extends BaseController
     public function comprar()
     {
         $bancosModel = new BancosModel();
+        $ticketModel = new TicketModel();
+        $settings = $this->getSettings();
+
         $data = [
-            'titulo' => "Samsung Galaxy S25 Ultra",
-            'precio' => 3.00,
-            'moneda' => "USD",
-            'bancos' => $bancosModel->where('activo', 1)->findAll()
+            'titulo' => $settings['nombre_producto'] ?? 'Samsung Galaxy S25 Ultra',
+            'precio' => (float) ($settings['precio_boleto'] ?? 3.00),
+            'moneda' => 'USD',
+            'bancos' => $bancosModel->where('activo', 1)->findAll(),
+            'boletos_disponibles' => $ticketModel->getAvailableCount(),
+            'max_boletos' => $ticketModel->isScarcityMode() ? 5 : 20,
+            'boletos_minimos' => (int) ($settings['boletos_minimos'] ?? 3),
         ];
 
         return view('home/comprar', $data);
@@ -66,6 +107,21 @@ class HomeController extends BaseController
                     ]);
             }
 
+            $participantModel = new ParticipantModel();
+            $participant = $participantModel->findByCedula($cedula);
+
+            if ($participant) {
+                return $this->response->setJSON([
+                    'nombre'    => $participant['nombres'],
+                    'apellidos' => $participant['apellidos'],
+                    'cedula'   => $participant['cedula'],
+                    'email'    => $participant['email'],
+                    'telefono' => $participant['telefono'],
+                    'exists'   => true,
+                    'csrfHash' => csrf_hash()
+                ]);
+            }
+
             $service = new \App\Services\ApiPrivadaService();
             $result = $service->getDataUser($cedula);
 
@@ -77,8 +133,13 @@ class HomeController extends BaseController
                 ]);
             }
 
+            $split = $this->splitName($result['nombre'] ?? '');
+            $result['nombres'] = $split['nombres'];
+            $result['apellidos'] = $split['apellidos'];
+
             return $this->response->setJSON([
                 ...$result,
+                'exists'   => false,
                 'csrfHash' => csrf_hash()
             ]);
 
@@ -95,6 +156,27 @@ class HomeController extends BaseController
                     'csrfHash' => csrf_hash()
                 ]);
         }
+    }
+
+    private function splitName(string $fullName): array
+    {
+        $parts = array_filter(explode(' ', trim($fullName)));
+
+        if (count($parts) === 0) {
+            return ['nombres' => '', 'apellidos' => ''];
+        }
+
+        if (count($parts) === 1) {
+            return ['nombres' => $parts[0], 'apellidos' => ''];
+        }
+
+        $nombres = $parts[0];
+        $apellidos = implode(' ', array_slice($parts, 1));
+
+        return [
+            'nombres'   => $nombres,
+            'apellidos' => $apellidos,
+        ];
     }
 
     public function misBoletos()

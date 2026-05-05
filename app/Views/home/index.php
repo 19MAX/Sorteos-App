@@ -115,7 +115,7 @@
             <div id="carousel" class="relative overflow-hidden rounded-2xl shadow-2xl glow-gold float-anim">
                 <?php foreach ($carrusel as $index => $img): ?>
                     <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
-                        <img src="<?= base_url('uploads/productos/carrusel/' . $img) ?>" alt="<?= esc($titulo) ?>" class="w-full object-cover aspect-square">
+                        <img src="<?= base_url('uploads/productos/' . $img) ?>" alt="<?= esc($titulo) ?>" class="w-full object-cover aspect-square">
                     </div>
                 <?php endforeach; ?>
                 
