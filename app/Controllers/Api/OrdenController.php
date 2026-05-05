@@ -189,8 +189,12 @@ class OrdenController extends BaseController
             return ['nombres' => $parts[0], 'apellidos' => ''];
         }
 
-        $nombres = $parts[0];
-        $apellidos = implode(' ', array_slice($parts, 1));
+        if (count($parts) === 2) {
+            return ['nombres' => $parts[0], 'apellidos' => $parts[1]];
+        }
+
+        $apellidos = $parts[0] . ' ' . $parts[1];
+        $nombres = implode(' ', array_slice($parts, 2));
 
         return [
             'nombres'   => $nombres,

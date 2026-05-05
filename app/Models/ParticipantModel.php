@@ -37,9 +37,9 @@ class ParticipantModel extends Model
     protected $cleanValidationRules = true;
 
     protected $allowCallbacks = true;
-    protected $beforeInsert   = ['generateCode'];
+    protected $beforeInsert   = ['generateCode', 'formatData'];
     protected $afterInsert    = [];
-    protected $beforeUpdate   = [];
+    protected $beforeUpdate   = ['formatData'];
     protected $afterUpdate    = [];
     protected $beforeFind     = [];
     protected $afterFind      = [];
@@ -51,6 +51,31 @@ class ParticipantModel extends Model
         if (empty($data['data']['codigo'])) {
             $data['data']['codigo'] = strtoupper(bin2hex(random_bytes(5)));
         }
+        return $data;
+    }
+
+    protected function formatData(array $data): array
+    {
+        if (empty($data['data'])) {
+            return $data;
+        }
+
+        if (!empty($data['data']['nombres'])) {
+            $data['data']['nombres'] = mb_strtoupper(trim($data['data']['nombres']), 'UTF-8');
+        }
+
+        if (!empty($data['data']['apellidos'])) {
+            $data['data']['apellidos'] = mb_strtoupper(trim($data['data']['apellidos']), 'UTF-8');
+        }
+
+        if (!empty($data['data']['email'])) {
+            $data['data']['email'] = mb_strtolower(trim($data['data']['email']), 'UTF-8');
+        }
+
+        if (!empty($data['data']['telefono'])) {
+            $data['data']['telefono'] = preg_replace('/[^0-9]/', '', $data['data']['telefono']);
+        }
+
         return $data;
     }
 
