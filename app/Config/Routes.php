@@ -44,3 +44,6 @@ $routes->group('api', function ($routes) {
     $routes->get('orden/verificar', 'Api\OrdenController::verificar');
     $routes->get('tickets/disponibles', 'Api\OrdenController::disponibles');
 });
+
+// Payphone
+$routes->post('payphone/pagar', 'PayphoneController::pagar');

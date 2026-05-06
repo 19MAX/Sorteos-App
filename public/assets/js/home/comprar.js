@@ -659,9 +659,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (ORDER.method === "card") {
-      clearOrder();
       showStep4Loading();
-      iniciarPagoPayphone();
+      await iniciarPagoPayphone();
     }
   };
 
@@ -694,9 +693,33 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       const data = await res.json();
-      if (data.url) window.location.href = data.url;
+
+      if (data.success && data.url) {
+        window.location.href = data.url;
+      } else {
+        goToStep(3);
+        const btn = document.getElementById("btn-finalizar");
+        btn.disabled = false;
+        btn.innerHTML = "Confirmar →";
+        btn.classList.remove("opacity-70");
+        swalAlertHome({
+          icon: "error",
+          title: "Error",
+          text: data.message || "No se pudo procesar el pago. Intenta de nuevo.",
+        });
+      }
     } catch (err) {
       console.error(err);
+      goToStep(3);
+      const btn = document.getElementById("btn-finalizar");
+      btn.disabled = false;
+      btn.innerHTML = "Confirmar →";
+      btn.classList.remove("opacity-70");
+      swalAlertHome({
+        icon: "error",
+        title: "Error de conexión",
+        text: "No se pudo conectar con el servidor. Intenta de nuevo.",
+      });
     }
   }
 });

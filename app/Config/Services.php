@@ -19,6 +19,15 @@ use CodeIgniter\Config\BaseService;
  */
 class Services extends BaseService
 {
+    public static function payphone($getShared = true)
+    {
+        if ($getShared) {
+            return static::getSharedInstance('payphone');
+        }
+
+        return new \App\Services\PayphoneService();
+    }
+
     /*
      * public static function example($getShared = true)
      * {

@@ -44,6 +44,7 @@ class TicketModel extends Model
 
     public const STATUS_DISPONIBLE = 'disponible';
     public const STATUS_RESERVADO = 'reservado';
+    public const STATUS_PROCESANDO = 'procesando';
     public const STATUS_VENDIDO = 'vendido';
     public const STATUS_PAGADO = 'pagado';
     public const STATUS_ASIGNADO = 'asignado';
@@ -116,6 +117,48 @@ class TicketModel extends Model
                 'participant_id'   => $participantId,
                 'reserved_at'      => date('Y-m-d H:i:s'),
                 'expired_at'       => $expiredAt,
+            ]);
+
+        return $this->db->affectedRows();
+    }
+
+    public function reserveTicketsProcessing(array $ticketIds, string $transaccionId, int $participantId, int $minutes = 15): int
+    {
+        if (empty($ticketIds)) {
+            return 0;
+        }
+
+        $expiredAt = date('Y-m-d H:i:s', strtotime("+{$minutes} minutes"));
+
+        $this->db->table($this->table)
+            ->whereIn('id', $ticketIds)
+            ->where('status', self::STATUS_DISPONIBLE)
+            ->update([
+                'status'          => self::STATUS_PROCESANDO,
+                'transaccion_id'   => $transaccionId,
+                'participant_id'   => $participantId,
+                'reserved_at'      => date('Y-m-d H:i:s'),
+                'expired_at'       => $expiredAt,
+            ]);
+
+        return $this->db->affectedRows();
+    }
+
+    public function releaseProcessingTickets(array $ticketIds): int
+    {
+        if (empty($ticketIds)) {
+            return 0;
+        }
+
+        $this->db->table($this->table)
+            ->whereIn('id', $ticketIds)
+            ->where('status', self::STATUS_PROCESANDO)
+            ->update([
+                'status'          => self::STATUS_DISPONIBLE,
+                'transaccion_id'   => null,
+                'participant_id'   => null,
+                'reserved_at'      => null,
+                'expired_at'       => null,
             ]);
 
         return $this->db->affectedRows();

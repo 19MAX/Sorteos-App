@@ -34,7 +34,7 @@ class TransactionModel extends Model
         'cantidad_boletos'  => 'required|is_natural',
         'total'            => 'required|decimal',
         'metodo_pago'       => 'required|in_list[fisico,transferencia,tarjeta]',
-        'status'           => 'required|in_list[pendiente,completado,rechazada,cancelado,expirado]',
+        'status'           => 'required|in_list[pendiente,completada,rechazada,cancelado,expirado,procesando_pago]',
     ];
 
     protected $validationMessages   = [];
