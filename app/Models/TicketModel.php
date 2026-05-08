@@ -85,13 +85,6 @@ class TicketModel extends Model
         return $percentage <= 5;
     }
 
-    public function getMaxTicketsPerTransaction(): int
-    {
-        if ($this->isScarcityMode()) {
-            return 5;
-        }
-        return 20;
-    }
 
     public function getExpiredReservedTickets(int $hours = 2): array
     {

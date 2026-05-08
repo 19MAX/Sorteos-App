@@ -12,9 +12,7 @@ class OrdenController extends BaseController
 {
     private const RATE_LIMIT_MAX = 3;
     private const RATE_LIMIT_SECONDS = 60;
-    private const MAX_TICKETS_NORMAL = 20;
-    private const MAX_TICKETS_SCARCITY = 5;
-    private const RESERVATION_HOURS = 2;
+    private const RESERVATION_HOURS = 1;
 
     private ParticipantModel $participantModel;
     private TicketModel $ticketModel;
@@ -102,7 +100,7 @@ class OrdenController extends BaseController
                     ]);
             }
 
-            $settings = $this->getSettings();
+            $settings = $this->settingsModel->getSettings();
             $price = (float) ($settings['precio_boleto'] ?? 3.00);
             $total = $price * $qty;
 
@@ -159,12 +157,12 @@ class OrdenController extends BaseController
                 'data' => [
                     'numero_transaccion' => $transaccionId,
                     'boletos' => $qty,
-                    'expira_en' => self::RESERVATION_HOURS . ' horas',
+                    'expira_en' => self::RESERVATION_HOURS . ' hora',
                 ],
                 'csrfHash' => csrf_hash()
             ]);
 
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             log_message('error', 'Error en OrdenController::crear: ' . $e->getMessage());
 
             return $this->response
@@ -233,20 +231,13 @@ class OrdenController extends BaseController
 
     private function getMaxTickets(): int
     {
+        $settings = $this->settingsModel->getSettings();
+
         if ($this->ticketModel->isScarcityMode()) {
-            return self::MAX_TICKETS_SCARCITY;
+            return (int) ($settings['boletos_escasez'] ?? 5);
         }
 
-        return self::MAX_TICKETS_NORMAL;
-    }
-
-    private function getSettings(): array
-    {
-        $settings = $this->settingsModel->first();
-        return $settings ?? [
-            'precio_boleto' => 3.00,
-            'total_boletos' => 1000,
-        ];
+        return (int) ($settings['boletos_maximos'] ?? 20);
     }
 
     public function verificar()
@@ -281,7 +272,7 @@ class OrdenController extends BaseController
                 ]
             ]);
 
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             log_message('error', 'Error en OrdenController::verificar: ' . $e->getMessage());
 
             return $this->response
@@ -308,7 +299,7 @@ class OrdenController extends BaseController
                     'modo_escasez' => $scarcityMode
                 ]
             ]);
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             log_message('error', 'Error en OrdenController::disponibles: ' . $e->getMessage());
 
             return $this->response

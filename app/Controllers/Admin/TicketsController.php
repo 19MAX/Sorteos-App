@@ -21,7 +21,7 @@ class TicketsController extends BaseController
     public function index()
     {
 
-        $settings = $this->settingsModel->first();
+        $settings = $this->settingsModel->getSettings();
         $totalConfigurados = $settings ? (int) $settings['total_boletos'] : 0;
         $totalGenerados = $this->ticketModel->countAll();
 
@@ -66,7 +66,7 @@ class TicketsController extends BaseController
                 return $this->response->setStatusCode(403)->setJSON(['status' => 'error', 'message' => 'Acceso denegado']);
             }
 
-            $settings = $this->settingsModel->first();
+            $settings = $this->settingsModel->getSettings();
             if (!$settings) {
                 return $this->response->setJSON(['status' => 'error', 'message' => 'No hay configuración de sorteo']);
             }

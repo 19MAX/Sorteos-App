@@ -44,6 +44,16 @@ class CreateSettingsTable extends Migration
                 'constraint' => '10,2',
                 'default' => 1.00
             ],
+            'boletos_maximos' => [         // Max en modo normal
+                'type' => 'INT',
+                'constraint' => 11,
+                'default' => 20
+            ],
+            'boletos_escasez' => [         // Max cuando queda <= 5%
+                'type' => 'INT',
+                'constraint' => 11,
+                'default' => 5
+            ],
             'sorteo_activo' => [
                 'type' => 'TINYINT',
                 'constraint' => 1,

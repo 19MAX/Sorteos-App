@@ -12,8 +12,6 @@ class PayphoneController extends BaseController
 {
     private const RATE_LIMIT_MAX = 3;
     private const RATE_LIMIT_SECONDS = 60;
-    private const MAX_TICKETS_NORMAL = 20;
-    private const MAX_TICKETS_SCARCITY = 5;
     private const PROCESSING_MINUTES = 15;
 
     private ParticipantModel $participantModel;
@@ -105,7 +103,7 @@ class PayphoneController extends BaseController
                     ]);
             }
 
-            $settings = $this->getSettings();
+            $settings = $this->settingsModel->getSettings();
             $precioBoleto = (float) ($settings['precio_boleto'] ?? 3.00);
             $total = $precioBoleto * $boletosComprados;
 
@@ -279,19 +277,13 @@ class PayphoneController extends BaseController
 
     private function getMaxTickets(): int
     {
+        $settings = $this->settingsModel->getSettings();
+
         if ($this->ticketModel->isScarcityMode()) {
-            return self::MAX_TICKETS_SCARCITY;
+            return (int) ($settings['boletos_escasez'] ?? 5);
         }
 
-        return self::MAX_TICKETS_NORMAL;
+        return (int) ($settings['boletos_maximos'] ?? 20);
     }
 
-    private function getSettings(): array
-    {
-        $settings = $this->settingsModel->first();
-        return $settings ?? [
-            'precio_boleto' => 3.00,
-            'total_boletos' => 1000,
-        ];
-    }
 }

@@ -133,7 +133,7 @@ class PayphoneService
                 'details' => $errorData['errors'] ?? []
             ];
 
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             log_message('error', 'Payphone curl exception: ' . $e->getMessage());
             return [
                 'success' => false,

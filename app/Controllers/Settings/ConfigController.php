@@ -22,7 +22,7 @@ class ConfigController extends BaseController
 
         $data = [
             'data_banks' => $this->bankModel->findAll(),
-            'settings' => $this->settingsModel->first()
+            'settings' => $this->settingsModel->getSettings()
         ];
         return view('settings/config', $data);
     }
@@ -34,9 +34,11 @@ class ConfigController extends BaseController
             $data = $this->request->getPost([
                 'nombre_producto',
                 'descripcion_producto',
-                'boletos_minimos',
                 'total_boletos',
-                'precio_boleto'
+                'precio_boleto',
+                'boletos_minimos',
+                'boletos_maximos',
+                'boletos_escasez',
             ]);
 
             // Checkbox
@@ -44,6 +46,7 @@ class ConfigController extends BaseController
 
             // Usuario (opcional)
             $data['updated_by'] = session()->get('user_id') ?? 1;
+            $data['updated_at'] = date('Y-m-d H:i:s');
 
             // Imagen
             $img = $this->request->getFile('imagen_producto');
@@ -56,38 +59,27 @@ class ConfigController extends BaseController
 
             // Obtener registro actual (solo 1 config)
             $settings = $this->settingsModel->first();
+            $saved = $settings
+                ? $this->settingsModel->update($settings['id'], $data)
+                : $this->settingsModel->insert($data);
 
-            if ($settings) {
-                // UPDATE
-                if ($this->settingsModel->update($settings['id'], $data) === false) {
-                    return $this->response->setJSON([
-                        'status' => 'error',
-                        'errors' => $this->settingsModel->errors()
-                    ]);
-                }
-
+            if ($saved === false) {
                 return $this->response->setJSON([
-                    'status' => 'success',
-                    'message' => 'Configuración actualizada'
-                ]);
-            } else {
-                // INSERT
-                if ($this->settingsModel->insert($data) === false) {
-                    return $this->response->setJSON([
-                        'status' => 'error',
-                        'errors' => $this->settingsModel->errors()
-                    ]);
-                }
-
-                return $this->response->setJSON([
-                    'status' => 'success',
-                    'message' => 'Configuración creada'
+                    'status' => 'error',
+                    'errors' => $this->settingsModel->errors()
                 ]);
             }
 
-        } catch (\Exception $e) {
-            log_message('error', 'SettingsController::save - ' . $e->getMessage());
+            // Invalida el caché para que el próximo request lea la BD
+            $this->settingsModel->clearSettingsCache();
 
+            return $this->response->setJSON([
+                'status' => 'success',
+                'message' => 'Configuración guardada correctamente'
+            ]);
+
+        } catch (\Exception $e) {
+            log_message('error', 'ConfigController::save - ' . $e->getMessage());
             return $this->response->setJSON([
                 'status' => 'error',
                 'message' => 'Error del servidor'

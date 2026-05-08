@@ -51,7 +51,7 @@ $isBankTab = in_array($lastAction, $bankActions);
                             <div class="col-lg-8">
                                 <!-- Configuración del Producto -->
                                 <div class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="mb-3">
                                             <label for="nombre_producto" class="form-label">Nombre del
                                                 Producto</label>
@@ -61,7 +61,7 @@ $isBankTab = in_array($lastAction, $bankActions);
                                                 required>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="mb-3">
                                             <label for="total_boletos" class="form-label">Total de
                                                 Boletos</label>
@@ -70,11 +70,7 @@ $isBankTab = in_array($lastAction, $bankActions);
                                                 min="1" max="1000000" required>
                                         </div>
                                     </div>
-                                </div>
-
-                                <!-- Configuración de Boletos -->
-                                <div class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="mb-3">
                                             <label for="precio_boleto" class="form-label">Precio por
                                                 Boleto
@@ -84,12 +80,33 @@ $isBankTab = in_array($lastAction, $bankActions);
                                                 min="0.01" step="0.01" required>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                </div>
+
+                                <!-- Configuración de Boletos -->
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="boletos_maximos" class="form-label">Numero máximo de
+                                                boletos</label>
+                                            <input type="number" class="form-control" id="boletos_maximos"
+                                                name="boletos_maximos" value="<?= $settings['boletos_maximos'] ?? '' ?>"
+                                                min="1" step="1" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
                                         <div class="mb-3">
                                             <label for="boletos_minimos" class="form-label">Numero mínimo de
                                                 boletos</label>
                                             <input type="number" class="form-control" id="boletos_minimos"
                                                 name="boletos_minimos" value="<?= $settings['boletos_minimos'] ?? '' ?>"
+                                                min="1" step="1" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="boletos_escasez" class="form-label">Boletos por escasez</label>
+                                            <input type="number" class="form-control" id="boletos_escasez"
+                                                name="boletos_escasez" value="<?= $settings['boletos_escasez'] ?? '' ?>"
                                                 min="1" step="1" required>
                                         </div>
                                     </div>

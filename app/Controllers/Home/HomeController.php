@@ -13,7 +13,7 @@ class HomeController extends BaseController
     private function getSettings(): array
     {
         $settingsModel = new SettingsModel();
-        $settings = $settingsModel->first();
+        $settings = $settingsModel->getSettings();
 
         if (!$settings) {
             return [
@@ -69,7 +69,7 @@ class HomeController extends BaseController
             'moneda' => 'USD',
             'bancos' => $bancosModel->where('activo', 1)->findAll(),
             'boletos_disponibles' => $ticketModel->getAvailableCount(),
-            'max_boletos' => $ticketModel->isScarcityMode() ? 5 : 20,
+            'max_boletos' => (int) ($settings['boletos_maximos'] ?? 10),
             'boletos_minimos' => (int) ($settings['boletos_minimos'] ?? 3),
         ];
 
@@ -143,7 +143,7 @@ class HomeController extends BaseController
                 'csrfHash' => csrf_hash()
             ]);
 
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
 
             // log completo del error
             log_message('error', 'Error en API cedula: ' . $e->getMessage() . ' | Trace: ' . $e->getTraceAsString());
