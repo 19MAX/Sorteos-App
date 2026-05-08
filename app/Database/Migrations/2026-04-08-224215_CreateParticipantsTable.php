@@ -18,7 +18,12 @@ class CreateParticipantsTable extends Migration
             'codigo' => [
                 'type' => 'VARCHAR',
                 'constraint' => 20,
-                'unique' => true
+                'unique' => true,
+                'null' => true
+            ],
+            'full_name' => [
+                'type' => 'VARCHAR',
+                'constraint' => 200
             ],
             'nombres' => [
                 'type' => 'VARCHAR',
@@ -30,7 +35,8 @@ class CreateParticipantsTable extends Migration
             ],
             'email' => [
                 'type' => 'VARCHAR',
-                'constraint' => 100
+                'constraint' => 100,
+                'null' => true
             ],
             'cedula' => [
                 'type' => 'VARCHAR',
@@ -39,7 +45,8 @@ class CreateParticipantsTable extends Migration
             ],
             'telefono' => [
                 'type' => 'VARCHAR',
-                'constraint' => 20
+                'constraint' => 20,
+                'null' => true
             ],
             'verificado' => [
                 'type' => 'TINYINT',

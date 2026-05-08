@@ -89,7 +89,7 @@ class PayphoneController extends BaseController
                 'nombres' => $nameParts['nombres'],
                 'apellidos' => $nameParts['apellidos'],
                 'email' => $data['email'] ?? '',
-                'cedula' => $data['cedula'] ?? '',
+                'cedula' => $data['cedula'] ?? '', 
                 'telefono' => $data['whatsapp'] ?? '',
             ]);
 

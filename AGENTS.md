@@ -21,38 +21,26 @@ composer test                # Run PHPUnit tests
 - **Admin views**: `app/Views/admin/`
 - **Layouts**: `app/Views/layout/main.php`
 
-## Skills (Auto-loaded)
+## Skills
 
-- `ci4-admin-ui-designer` → Admin views using existing template (`app/Views/layout/main.php`)
+Load with `skill(name: "skill-name")`:
 - `compra-boletos` → Ticket purchase/reservation logic (concurrency, rate limiting, Payphone)
-- `quickluck-landing` → Landing page system (`app/Views/home/`)
+- `quickluck-landing` → Landing page system (`app/Views/home/`) — **critical rules**: no dates, no ticket counts, only `$soldPercent` (0–100) is public
+- `ci4-admin-ui-designer` → Admin views using `app/Views/layout/main.php`
+- `queue-code` → Async job queues
 
-Load with: `skill(name: "skill-name")`
+## Ticket Concurrency (Critical)
 
-## Admin Routes
+**Never** do `SELECT` then `UPDATE` in PHP. Use atomic SQL:
+```php
+UPDATE tickets SET status = 'procesando' WHERE id IN (...) AND status = 'disponible';
+// Must verify $this->db->affectedRows() === count(requested tickets)
+```
+If affected rows < requested, someone else won the race — rollback and retry.
 
-All `/admin/*` routes use `adminauth` filter. Key routes:
-- `GET /admin` → Dashboard
-- `GET /admin/tickets/data` → DataTables endpoint
-- `POST /admin/tickets/generate-process` → Generate tickets
-- `POST /admin/transactions/mark-as-paid` → Approve transfer payments
+## Admin Panel
 
-## API Routes
-
-- `POST /api/cedula` → Validate cedula
-- `POST /api/orden/crear` → Create order
-- `GET /api/orden/verificar` → Check order status
-- `GET /api/tickets/disponibles` → Available tickets
-
-## Ticket States
-
-`disponible` → `reservado` → `procesando` → `vendido`/`pagado`/`asignado` | `expirado`
-
-## Database Conventions
-
-- Migrations use timestamp prefix (`2026-04-08-224xxx`)
-- Tables: `participants`, `tickets`, `transactions`, `bancos`, `payphone_transactions`, `admins`, `settings`, `system_logs`
-- Transaction `metodo_pago`: `fisico`, `transferencia`, `tarjeta`
+All `/admin/*` routes use `adminauth` filter. Default admin: `admin@admin.com` / `password` (from `.env` seeder vars).
 
 ## Queue System
 
@@ -69,4 +57,4 @@ php spark queue:work --nombre cola
 
 ## CI/CD
 
-No GitHub Actions workflows present. Check `.github/workflows/` if added later.
+No GitHub Actions workflows present.

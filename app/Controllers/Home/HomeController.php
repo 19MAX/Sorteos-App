@@ -118,6 +118,7 @@ class HomeController extends BaseController
                     'email'    => $participant['email'],
                     'telefono' => $participant['telefono'],
                     'exists'   => true,
+                    'locked'   => true,
                     'csrfHash' => csrf_hash()
                 ]);
             }
@@ -125,21 +126,52 @@ class HomeController extends BaseController
             $service = new \App\Services\ApiPrivadaService();
             $result = $service->getDataUser($cedula);
 
-            if (!$result) {
+            if (!$result || empty($result['nombre'])) {
                 return $this->response->setJSON([
                     'error' => true,
                     'message' => 'No se encontraron datos',
+                    'locked' => false,
                     'csrfHash' => csrf_hash()
                 ]);
             }
 
-            $split = $this->splitName($result['nombre'] ?? '');
-            $result['nombres'] = $split['nombres'];
-            $result['apellidos'] = $split['apellidos'];
+            $existing = $participantModel->findByCedula($cedula);
+            if ($existing) {
+                return $this->response->setJSON([
+                    'nombre'    => $existing['nombres'],
+                    'apellidos' => $existing['apellidos'],
+                    'cedula'   => $cedula,
+                    'email'    => $existing['email'],
+                    'telefono' => $existing['telefono'],
+                    'exists'   => true,
+                    'locked'   => true,
+                    'csrfHash' => csrf_hash()
+                ]);
+            }
+
+            $apiNombre = trim($result['nombre'] ?? '');
+            $split = $this->splitNameApi($apiNombre);
+
+            $participantModel->skipValidation(true)->insert([
+                'nombres'   => $split['nombres'],
+                'apellidos' => $split['apellidos'],
+                'full_name' => $apiNombre,
+                'email'     => $result['email'] ?? '',
+                'cedula'    => $cedula,
+                'telefono'  => $result['telefono'] ?? '',
+                'verificado' => 1,
+            ]);
+
+            $participant = $participantModel->findByCedula($cedula);
 
             return $this->response->setJSON([
-                ...$result,
+                'nombre'    => $participant ? $participant['nombres'] : '',
+                'apellidos' => $participant ? $participant['apellidos'] : '',
+                'cedula'   => $cedula,
+                'email'    => $participant ? $participant['email'] : '',
+                'telefono' => $participant ? $participant['telefono'] : '',
                 'exists'   => false,
+                'locked'   => true,
                 'csrfHash' => csrf_hash()
             ]);
 
@@ -158,33 +190,32 @@ class HomeController extends BaseController
         }
     }
 
-    private function splitName(string $fullName): array
-    {
-        $parts = array_filter(explode(' ', trim($fullName)));
-
-        if (count($parts) === 0) {
-            return ['nombres' => '', 'apellidos' => ''];
-        }
-
-        if (count($parts) === 1) {
-            return ['nombres' => $parts[0], 'apellidos' => ''];
-        }
-
-        if (count($parts) === 2) {
-            return ['nombres' => $parts[0], 'apellidos' => $parts[1]];
-        }
-
-        $apellidos = $parts[0] . ' ' . $parts[1];
-        $nombres = implode(' ', array_slice($parts, 2));
-
-        return [
-            'nombres'   => $nombres,
-            'apellidos' => $apellidos,
-        ];
-    }
-
     public function misBoletos()
     {
         return view('home/mis-boletos');
+    }
+
+    private function splitNameApi(string $fullName): array
+    {
+        $parts = array_filter(explode(' ', trim($fullName)));
+        $count = count($parts);
+
+        if ($count === 0) {
+            return ['nombres' => '', 'apellidos' => ''];
+        }
+        if ($count === 1) {
+            return ['nombres' => $parts[0], 'apellidos' => ''];
+        }
+        if ($count === 2) {
+            return ['nombres' => $parts[1], 'apellidos' => $parts[0]];
+        }
+        if ($count === 3) {
+            return ['nombres' => $parts[2], 'apellidos' => $parts[0] . ' ' . $parts[1]];
+        }
+
+        return [
+            'apellidos' => $parts[0] . ' ' . $parts[1],
+            'nombres'   => implode(' ', array_slice($parts, 2)),
+        ];
     }
 }

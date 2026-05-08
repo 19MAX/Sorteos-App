@@ -12,7 +12,7 @@ class ParticipantModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['codigo', 'nombres', 'apellidos', 'email', 'cedula', 'telefono', 'verificado'];
+    protected $allowedFields    = ['codigo', 'nombres', 'apellidos', 'full_name', 'email', 'cedula', 'telefono', 'verificado'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
@@ -68,6 +68,10 @@ class ParticipantModel extends Model
             $data['data']['apellidos'] = mb_strtoupper(trim($data['data']['apellidos']), 'UTF-8');
         }
 
+        if (!empty($data['data']['full_name'])) {
+            $data['data']['full_name'] = mb_strtoupper(trim($data['data']['full_name']), 'UTF-8');
+        }
+
         if (!empty($data['data']['email'])) {
             $data['data']['email'] = mb_strtolower(trim($data['data']['email']), 'UTF-8');
         }
@@ -90,8 +94,8 @@ class ParticipantModel extends Model
 
         if ($participant) {
             $this->update($participant['id'], [
-                'nombres'   => $data['nombres'],
-                'apellidos' => $data['apellidos'],
+                // 'nombres'   => $data['nombres'],
+                // 'apellidos' => $data['apellidos'],
                 'email'     => $data['email'],
                 'telefono'  => $data['telefono'],
             ]);

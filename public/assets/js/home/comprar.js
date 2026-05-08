@@ -51,6 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
       qty: PRODUCT.minTickets,
       total: PRODUCT.ticketPrice * PRODUCT.minTickets,
       method: null,
+      nombreLocked: false,
     };
   }
 
@@ -76,6 +77,12 @@ document.addEventListener("DOMContentLoaded", () => {
   function resetFormToStep1() {
     clearOrder();
     document.querySelector('[name="nombre"]').value = "";
+    document.querySelector('[name="nombre"]').readOnly = false;
+    document.querySelector('[name="nombre"]').classList.remove('bg-gray-900', 'cursor-not-allowed');
+    document.querySelector('[name="nombre"]').classList.add('focus:border-brand-gold');
+    document.querySelector('[name="nombre"]').title = "";
+    const badge = document.getElementById('nombre-locked-badge');
+    if (badge) badge.remove();
     document.querySelector('[name="cedula"]').value = "";
     document.querySelector('[name="email"]').value = "";
     document.querySelector('[name="whatsapp"]').value = "";
@@ -258,6 +265,22 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector('[name="email"]').value = ORDER.email || "";
     document.querySelector('[name="whatsapp"]').value = ORDER.whatsapp || "";
 
+    // Restore readonly state if nombre was locked
+    const inputNombre = document.querySelector('[name="nombre"]');
+    if (ORDER.nombreLocked) {
+      inputNombre.readOnly = true;
+      inputNombre.classList.add('bg-gray-900', 'cursor-not-allowed');
+      inputNombre.classList.remove('focus:border-brand-gold');
+      let badge = document.getElementById('nombre-locked-badge');
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.id = 'nombre-locked-badge';
+        badge.className = 'inline-flex items-center gap-1 text-xs text-green-400 font-medium mt-1';
+        badge.innerHTML = '✓ Nombre verificado';
+        inputNombre.parentElement.appendChild(badge);
+      }
+    }
+
     // Qty
     qtyDisplay.textContent = ORDER.qty || 1;
     updatePrice();
@@ -336,8 +359,19 @@ document.addEventListener("DOMContentLoaded", () => {
         CSRF.hash = data.csrfHash;
       }
 
-      if (!data || !data.nombre) {
-        hideSkeleton();
+      hideSkeleton();
+
+      // If API returned an error (participant not found anywhere), allow manual entry
+      if (data.error) {
+        inputNombre.readOnly = false;
+        inputNombre.classList.remove('bg-gray-900', 'cursor-not-allowed');
+        inputNombre.classList.add('focus:border-brand-gold');
+        const badge = document.getElementById('nombre-locked-badge');
+        if (badge) badge.remove();
+        return;
+      }
+
+      if (!data.nombre && !data.apellidos) {
         return;
       }
 
@@ -350,6 +384,32 @@ document.addEventListener("DOMContentLoaded", () => {
       ORDER.nombre = inputNombre.value;
       ORDER.email = inputEmail.value;
       ORDER.whatsapp = inputWhatsapp.value;
+
+      // Lock nombre field if participant exists in local DB or API has data
+      if (data.locked) {
+        inputNombre.readOnly = true;
+        inputNombre.classList.add('bg-gray-900', 'cursor-not-allowed');
+        inputNombre.classList.remove('focus:border-brand-gold');
+        inputNombre.title = 'Nombre verificado desde registro oficial';
+        ORDER.nombreLocked = true;
+
+        let badge = document.getElementById('nombre-locked-badge');
+        if (!badge) {
+          badge = document.createElement('span');
+          badge.id = 'nombre-locked-badge';
+          badge.className = 'inline-flex items-center gap-1 text-xs text-green-400 font-medium mt-1';
+          badge.innerHTML = '✓ Nombre verificado';
+          inputNombre.parentElement.appendChild(badge);
+        }
+      } else {
+        inputNombre.readOnly = false;
+        inputNombre.classList.remove('bg-gray-900', 'cursor-not-allowed');
+        inputNombre.classList.add('focus:border-brand-gold');
+        inputNombre.title = '';
+        ORDER.nombreLocked = false;
+        const badge = document.getElementById('nombre-locked-badge');
+        if (badge) badge.remove();
+      }
 
       saveOrder();
     } catch (err) {

@@ -80,15 +80,26 @@ class OrdenController extends BaseController
                     ]);
             }
 
-            $nameParts = $this->splitName($data['nombre'] ?? '');
+            $participant = $this->participantModel->findByCedula($data['cedula'] ?? '');
 
-            $participant = $this->participantModel->findOrCreate([
-                'nombres'   => $nameParts['nombres'],
-                'apellidos' => $nameParts['apellidos'],
-                'email'     => $data['email'] ?? '',
-                'cedula'    => $data['cedula'] ?? '',
-                'telefono'  => $data['whatsapp'] ?? '',
-            ]);
+            if (!$participant) {
+                $nameParts = $this->splitName($data['nombre'] ?? '');
+                $this->participantModel->skipValidation(true)->insert([
+                    'nombres'   => $nameParts['nombres'],
+                    'apellidos' => $nameParts['apellidos'],
+                    'full_name' => trim($data['nombre'] ?? ''),
+                    'email'     => $data['email'] ?? '',
+                    'cedula'    => $data['cedula'] ?? '',
+                    'telefono'  => $data['whatsapp'] ?? '',
+                ]);
+                $participant = $this->participantModel->findByCedula($data['cedula'] ?? '');
+            } else {
+                $this->participantModel->update($participant['id'], [
+                    'email'    => $data['email'] ?? '',
+                    'telefono' => $data['whatsapp'] ?? '',
+                ]);
+                $participant = $this->participantModel->findByCedula($data['cedula'] ?? '');
+            }
 
             if (!$participant) {
                 return $this->response
