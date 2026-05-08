@@ -47,6 +47,9 @@ class PayphoneController extends BaseController
 
             $data = $this->request->getJSON(true);
 
+            // var_dump($data); // Debug: Verificar datos recibidos
+            // exit; // Detener ejecución para revisar datos
+
             $validation = $this->validateOrderData($data);
             if (!$validation['valid']) {
                 return $this->response
@@ -58,10 +61,10 @@ class PayphoneController extends BaseController
                     ]);
             }
 
-            $qty = (int) ($data['qty'] ?? 0);
+            $boletosComprados = (int) ($data['qty'] ?? 0);
             $maxTickets = $this->getMaxTickets();
 
-            if ($qty > $maxTickets) {
+            if ($boletosComprados > $maxTickets) {
                 return $this->response
                     ->setStatusCode(400)
                     ->setJSON([
@@ -72,7 +75,7 @@ class PayphoneController extends BaseController
             }
 
             $availableCount = $this->ticketModel->getAvailableCount();
-            if ($availableCount < $qty) {
+            if ($availableCount < $boletosComprados) {
                 return $this->response
                     ->setStatusCode(400)
                     ->setJSON([
@@ -85,11 +88,11 @@ class PayphoneController extends BaseController
             $nameParts = $this->splitName($data['nombre'] ?? '');
 
             $participant = $this->participantModel->findOrCreate([
-                'nombres'   => $nameParts['nombres'],
+                'nombres' => $nameParts['nombres'],
                 'apellidos' => $nameParts['apellidos'],
-                'email'     => $data['email'] ?? '',
-                'cedula'    => $data['cedula'] ?? '',
-                'telefono'  => $data['whatsapp'] ?? '',
+                'email' => $data['email'] ?? '',
+                'cedula' => $data['cedula'] ?? '',
+                'telefono' => $data['whatsapp'] ?? '',
             ]);
 
             if (!$participant) {
@@ -103,16 +106,16 @@ class PayphoneController extends BaseController
             }
 
             $settings = $this->getSettings();
-            $price = (float) ($settings['precio_boleto'] ?? 3.00);
-            $total = $price * $qty;
+            $precioBoleto = (float) ($settings['precio_boleto'] ?? 3.00);
+            $total = $precioBoleto * $boletosComprados;
 
             $ticketIds = $this->ticketModel
                 ->where('status', 'disponible')
                 ->orderBy('id', 'RANDOM')
-                ->limit($qty)
+                ->limit($boletosComprados)
                 ->findColumn('id');
 
-            if (empty($ticketIds) || count($ticketIds) < $qty) {
+            if (empty($ticketIds) || count($ticketIds) < $boletosComprados) {
                 return $this->response
                     ->setStatusCode(400)
                     ->setJSON([
@@ -131,7 +134,7 @@ class PayphoneController extends BaseController
                 self::PROCESSING_MINUTES
             );
 
-            if ($reservedCount !== $qty) {
+            if ($reservedCount !== $boletosComprados) {
                 return $this->response
                     ->setStatusCode(409)
                     ->setJSON([
@@ -143,15 +146,16 @@ class PayphoneController extends BaseController
 
             $payphoneData = [
                 'clientTransactionId' => $transaccionId,
-                'amount' => (int) ($total * 100),
+                'amount' => (int) ($total),
                 'reference' => 'Compra de boletos Quickluck',
                 'firstName' => $nameParts['nombres'],
                 'lastName' => $nameParts['apellidos'],
                 'email' => $data['email'] ?? '',
                 'phoneNumber' => $data['whatsapp'] ?? '',
-                'quantity' => $qty,
+                'quantity' => $boletosComprados,
                 'responseUrl' => base_url('payphone/respuesta'),
                 'cancellationUrl' => base_url('comprar'),
+                'precioUnitario' => (int) ($precioBoleto * 100),
             ];
 
             $payphoneService = service('payphone');
@@ -183,16 +187,19 @@ class PayphoneController extends BaseController
                         'csrfHash' => csrf_hash()
                     ]);
             }
+            $ticketNumeros = $this->ticketModel
+                ->whereIn('id', $ticketIds)
+                ->findColumn('numero');
 
             $this->transactionModel->insert([
-                'transaccion_id'    => $transaccionId,
-                'participant_id'    => $participant['id'],
-                'cantidad_boletos'  => $qty,
-                'total'             => $total,
-                'metodo_pago'       => 'tarjeta',
-                'status'            => 'procesando_pago',
-                'boletos_asignados' => implode(',', $ticketIds),
-                'expired_at'        => date('Y-m-d H:i:s', strtotime('+' . self::PROCESSING_MINUTES . ' minutes')),
+                'transaccion_id' => $transaccionId,
+                'participant_id' => $participant['id'],
+                'cantidad_boletos' => $boletosComprados,
+                'total' => $total,
+                'metodo_pago' => 'tarjeta',
+                'status' => 'procesando_pago',
+                'boletos_asignados' => implode(',', $ticketNumeros),
+                'expired_at' => date('Y-m-d H:i:s', strtotime('+' . self::PROCESSING_MINUTES . ' minutes')),
             ]);
 
             return $this->response->setJSON([
@@ -203,7 +210,7 @@ class PayphoneController extends BaseController
                 'csrfHash' => csrf_hash()
             ]);
 
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             log_message('error', 'Error en PayphoneController::pagar: ' . $e->getMessage());
 
             return $this->response
@@ -236,7 +243,7 @@ class PayphoneController extends BaseController
         $nombres = implode(' ', array_slice($parts, 2));
 
         return [
-            'nombres'   => $nombres,
+            'nombres' => $nombres,
             'apellidos' => $apellidos,
         ];
     }

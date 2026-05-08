@@ -1,5 +1,50 @@
 <?php
 
+class TransactionStatus
+{
+    const Pendiente = "pendiente";
+    const Completado = "completado";
+    const Rechazada = "rechazada";
+    const Cancelado = "cancelado";
+    const Fallido = "fallido";
+    const Expirado = "expirado";
+    const ProcesandoPago = "procesando_pago";
+}
+class TicketStatus
+{
+    const Disponible = "disponible";
+    const Reservado = "reservado";
+    const Procesando = "procesando";
+    const Vendido = "vendido";
+    const Pagado = "pagado";
+    const Asignado = "asignado";
+    const Expirado = "expirado";
+}
+
+if (!function_exists('getTransactionStatusText')) {
+    function getTransactionStatusText($status)
+    {
+        switch ($status) {
+            case TransactionStatus::Pendiente:
+                return 'Pendiente';
+            case TransactionStatus::Completado:
+                return 'Completado';
+            case TransactionStatus::Rechazada:
+                return 'Rechazada';
+            case TransactionStatus::Cancelado:
+                return 'Cancelado';
+            case TransactionStatus::Fallido:
+                return 'Fallido';
+            case TransactionStatus::Expirado:
+                return 'Expirado';
+            case TransactionStatus::ProcesandoPago:
+                return 'Procesando Pago';
+            default:
+                return 'Desconocido';
+        }
+    }
+}
+
 if (!function_exists('transaction_status_badge')) {
     function transaction_status_badge(string $status): string
     {

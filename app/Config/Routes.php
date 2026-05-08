@@ -47,3 +47,4 @@ $routes->group('api', function ($routes) {
 
 // Payphone
 $routes->post('payphone/pagar', 'PayphoneController::pagar');
+$routes->get('payphone/respuesta', 'Payphone\RespuestaController::respuesta');

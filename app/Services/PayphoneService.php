@@ -9,7 +9,6 @@ class PayphoneService
     private string $apiToken;
     private string $storeId;
     private string $baseUrl = 'https://pay.payphonetodoesposible.com';
-    private const COMMISSION_RATE = 0.06;
 
     public function __construct()
     {
@@ -29,14 +28,17 @@ class PayphoneService
 
     public function createPayment(array $data): array
     {
-        $clientTransactionId = $data['clientTransactionId'] ?? '';
-        $amountBase = (int) ($data['amount'] ?? 0);
-        $quantity = (int) ($data['quantity'] ?? 1);
 
-        $commission = (int) round($amountBase * self::COMMISSION_RATE);
-        $amountWithoutTax = $amountBase;
-        $amountWithTax = $amountBase + $commission;
-        $tax = $commission;
+        // Datos básicos para calcular el total
+        $montoBase = $data['amount'] ?? 0;
+        $por = 0.00; // Comisión fija del 0% (ajustable si se requiere)
+        $iva = 0.00; // IVA del 0% (ajustable si se requiere)
+        $tot = ($montoBase * $por) * $iva;
+        $total = round(($montoBase + $tot) * 100);
+
+        $clientTransactionId = $data['clientTransactionId'] ?? '';
+        $quantity = (int) ($data['quantity'] ?? 1);
+        $precioBoleto = ($data['precioUnitario'] * 100 ) ?? 0; // Precio unitario en centavos
 
         $reference = $data['reference'] ?? '';
         $firstName = trim($data['firstName'] ?? '');
@@ -47,32 +49,27 @@ class PayphoneService
         $responseUrl = $data['responseUrl'] ?? '';
         $cancellationUrl = $data['cancellationUrl'] ?? '';
 
-        $totalAmount = $amountWithoutTax + $amountWithTax + $tax;
+        $totalAmount = $total; // El total calculado con impuestos y comisiones, multiplicado por 100 para convertir a centavos
 
         $payload = [
             'amount' => $totalAmount,
-            'amountWithoutTax' => $amountWithoutTax,
-            'amountWithTax' => $amountWithTax,
-            'tax' => $tax,
-            'service' => 0,
-            'tip' => 0,
+            'amountWithoutTax' => $totalAmount,
+            'amountWithTax' => 0,
+            'tax' => 0,
             'clientTransactionId' => $clientTransactionId,
             'reference' => $reference,
             'storeId' => $this->storeId,
             'currency' => $currency,
             'responseUrl' => $responseUrl,
             'cancellationUrl' => $cancellationUrl,
-            'timeZone' => -5,
-            'lat' => '-1.831239',
-            'lng' => '-78.183406',
             'order' => [
                 'billTo' => [
                     'billToId' => 0,
                     'address1' => 'N/A',
                     'address2' => 'N/A',
                     'country' => 'EC',
-                    'state' => 'Azuay',
-                    'locality' => 'Cuenca',
+                    'state' => 'Bolivar',
+                    'locality' => 'Guaranda',
                     'firstName' => substr($firstName, 0, 50),
                     'lastName' => substr($lastName, 0, 50),
                     'phoneNumber' => $phoneNumber,
@@ -84,19 +81,15 @@ class PayphoneService
                 'lineItems' => [
                     [
                         'productName' => 'Boletos Quickluck',
-                        'unitPrice' => (int) ($amountWithoutTax / $quantity),
+                        'unitPrice' => $precioBoleto,
                         'quantity' => $quantity,
-                        'totalAmount' => $amountWithoutTax,
-                        'taxAmount' => $tax,
+                        'totalAmount' => $total,
+                        'taxAmount' => 0,
                         'productSKU' => 'QL-' . substr($clientTransactionId, 0, 10),
                         'productDescription' => substr($reference, 0, 100)
                     ]
                 ]
-            ],
-            'documentId' => '',
-            'phoneNumber' => $phoneNumber,
-            'email' => $email,
-            'optionalParameter' => substr($reference, 0, 50)
+            ]
         ];
 
         log_message('info', 'Payphone request payload: ' . json_encode($payload));
