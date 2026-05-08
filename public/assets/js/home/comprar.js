@@ -401,6 +401,32 @@ document.addEventListener("DOMContentLoaded", () => {
   // =====================
   loadOrder();
   restoreUI();
+  checkPayphoneCancel();
+
+  // =====================
+  // PAYPHONE CANCEL CHECK
+  // =====================
+  function checkPayphoneCancel() {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    const clientTransactionId = params.get("clientTransactionId");
+
+    if (id === "0" && clientTransactionId) {
+      sessionStorage.removeItem("quickluck_order");
+      Swal.fire({
+        icon: "warning",
+        title: "Pago cancelado",
+        text: "El pago fue cancelado. Tu pedido no fue procesado.",
+        confirmButtonColor: "#f5c518",
+        background: "#111827",
+        color: "#fff",
+      }).then(() => {
+        const url = new URL(window.location.href);
+        url.search = "";
+        window.location.href = url.toString();
+      });
+    }
+  }
 
   // =====================
   // NAV CLICK
