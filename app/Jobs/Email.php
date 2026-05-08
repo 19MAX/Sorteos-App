@@ -2,24 +2,37 @@
 
 namespace App\Jobs;
 
-use Exception;
 use CodeIgniter\Queue\BaseJob;
+use App\Models\ParticipantModel;
 
 class Email extends BaseJob
 {
     public function process()
     {
-        $email  = service('email', null, false);
-        $result = $email
-            ->setTo('maxisebas19@gmail.com')
-            ->setSubject('My test email')
-            ->setMessage($this->data['message'])
-            ->send(false);
+        $email = service('email', null, false);
 
-        if (! $result) {
-            throw new Exception($email->printDebugger('headers'));
+        $to       = $this->data['to']       ?? '';
+        $subject  = $this->data['subject']  ?? 'Notificación';
+        $template = $this->data['template'] ?? null;
+        $viewData = $this->data['viewData'] ?? [];
+
+        if ($template) {
+            $message = view($template, $viewData);
+        } else {
+            $message = $this->data['message']  ?? '';
         }
 
-        return $result;
+        $email->setTo($to);
+        $email->setSubject($subject);
+        $email->setMessage($message);
+
+        if (!$email->send(false)) {
+            log_message('error', '[Email Job] Falló envío: ' . $email->printDebugger('headers'));
+            throw new \Exception($email->printDebugger('headers'));
+        }
+
+        log_message('info', "[Email Job] Correo enviado a {$to}: {$subject}");
+
+        return true;
     }
 }

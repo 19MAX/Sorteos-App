@@ -3,6 +3,7 @@ namespace App\Services;
 
 use TicketStatus;
 use TransactionStatus;
+use App\Models\ParticipantModel;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 
 class AprobarPagoService
@@ -186,7 +187,39 @@ class AprobarPagoService
             ],
         ];
 
+        $this->sendConfirmationEmail($transaction, $tickets);
+
         return true;
+    }
+
+    private function sendConfirmationEmail(array $transaction, array $tickets): void
+    {
+        $participantModel = new ParticipantModel();
+        $participant = $participantModel->find($transaction['participant_id']);
+
+        if (!$participant) {
+            log_message('warning', "[AprobarPagoService] No se encontró participant_id={$transaction['participant_id']} para enviar correo");
+            return;
+        }
+
+        $email = $participant['email'] ?? null;
+        if (empty($email)) {
+            log_message('warning', "[AprobarPagoService] Participant sin email: id={$transaction['participant_id']}");
+            return;
+        }
+
+        service('queue')->push('emails', 'email', [
+            'to' => $email,
+            'subject' => 'Confirmación de pago - Sorteo Quickluck',
+            'template' => 'emails/tickets_confirmation',
+            'viewData' => [
+                'participant' => $participant,
+                'transaction' => $transaction,
+                'tickets' => $tickets,
+            ],
+        ]);
+
+        log_message('info', "[AprobarPagoService] Email en cola para {$email}, transactionId={$transaction['id']}");
     }
 
     private function fail(string $message): bool
