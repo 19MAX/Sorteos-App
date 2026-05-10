@@ -87,29 +87,34 @@ class AprobarPagoService
             }
         }
 
-        // ── 5. Validar que los números de boleto coincidan con boletos_asignados
-        $assignedNumbers = array_map('trim', explode(',', $transaction['boletos_asignados']));
+        // ── 5. Validar que los IDs de ticket coincidan con boletos_asignados
+        $boletosRaw = $transaction['boletos_asignados'] ?? '';
+        if (is_string($boletosRaw) && strpos($boletosRaw, '[') === 0) {
+            $assignedIds = array_map('intval', json_decode($boletosRaw, true) ?? []);
+        } else {
+            $assignedIds = array_filter(array_map('intval', explode(',', $boletosRaw)));
+        }
 
         log_message(
             'debug',
-            "[AprobarPagoService] Números asignados en transacción: ["
-            . implode(', ', $assignedNumbers) . "]"
+            "[AprobarPagoService] IDs asignados en transacción: ["
+            . implode(', ', $assignedIds) . "]"
         );
 
         foreach ($tickets as $ticket) {
-            $numeroTicket = trim((string) $ticket['numero']);
-            $coincide = in_array($numeroTicket, $assignedNumbers, true);
+            $ticketId = (int) $ticket['id'];
+            $coincide = in_array($ticketId, $assignedIds, true);
 
             log_message(
                 'debug',
-                "[AprobarPagoService] Comparando ticket numero='{$numeroTicket}'"
-                . " ¿coincide? " . ($coincide ? 'SÍ' : 'NO')
+                "[AprobarPagoService] Comparando ticket ID={$ticketId}"
+                . " numero={$ticket['numero']} ¿coincide? " . ($coincide ? 'SÍ' : 'NO')
             );
 
             if (!$coincide) {
                 return $this->fail(
-                    "Número '{$numeroTicket}' del ticket ID={$ticket['id']}"
-                    . " no está en boletos_asignados: [" . implode(', ', $assignedNumbers) . "]"
+                    "Ticket ID={$ticketId} (numero={$ticket['numero']})"
+                    . " no está en boletos_asignados: [" . implode(', ', $assignedIds) . "]"
                 );
             }
         }

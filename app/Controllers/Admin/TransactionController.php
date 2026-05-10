@@ -6,18 +6,21 @@ use App\Controllers\BaseController;
 use App\Models\TransactionModel;
 use App\Models\TicketModel;
 use App\Models\ParticipantModel;
+use App\Services\AprobarPagoService;
 
 class TransactionController extends BaseController
 {
     protected $transactionModel;
     protected $ticketModel;
     protected $participantModel;
+    protected $aprobarPagoService;
 
     public function __construct()
     {
         $this->transactionModel = new TransactionModel();
         $this->ticketModel = new TicketModel();
         $this->participantModel = new ParticipantModel();
+        $this->aprobarPagoService = new AprobarPagoService();
         helper(['transaction_status']);
     }
 
@@ -71,70 +74,17 @@ class TransactionController extends BaseController
 
             log_message('info', "TransactionController::markAsPaid - Transacción encontrada: " . json_encode($transaction));
 
-            if ($transaction['status'] !== 'pendiente') {
-                log_message('warning', "TransactionController::markAsPaid - Transacción no pendiente. Status actual: {$transaction['status']}");
+            $approved = $this->aprobarPagoService->approvePayment($id);
+
+            if (!$approved) {
+                log_message('error', "TransactionController::markAsPaid - Falló aprobación: " . json_encode($this->aprobarPagoService->result));
                 return $this->response->setJSON([
                     'status' => 'error',
-                    'message' => 'Solo se pueden marcar como pagadas las transacciones pendientes'
+                    'message' => $this->aprobarPagoService->result['message'] ?? 'Error al aprobar la transacción'
                 ]);
             }
 
-            $adminId = session()->get('admin_id');
-            log_message('info', "TransactionController::markAsPaid - AdminID: {$adminId}");
-
-            $updated = $this->transactionModel->db->table('transactions')
-                ->where('id', $id)
-                ->update([
-                    'status'       => 'completado',
-                    'admin_id'     => $adminId,
-                    'completed_at' => date('Y-m-d H:i:s'),
-                ]);
-
-            $affected = $this->transactionModel->db->affectedRows();
-            log_message('info', "TransactionController::markAsPaid - Transaction update affected rows: {$affected}");
-
-            if (!$updated && $affected === 0) {
-                log_message('error', "TransactionController::markAsPaid - Error al actualizar transacción");
-                return $this->response->setJSON([
-                    'status' => 'error',
-                    'message' => 'Error al actualizar la transacción'
-                ]);
-            }
-
-            log_message('info', "TransactionController::markAsPaid - Transacción actualizada exitosamente");
-
-            $boletosAsignados = $transaction['boletos_asignados'] ?? '';
-            log_message('info', "TransactionController::markAsPaid - boletos_asignados raw: " . json_encode($boletosAsignados));
-
-            if (!empty($boletosAsignados)) {
-                if (is_string($boletosAsignados)) {
-                    if (strpos($boletosAsignados, '[') === 0) {
-                        $boletosAsignados = json_decode($boletosAsignados, true) ?? [];
-                    } else {
-                        $boletosAsignados = array_filter(array_map('intval', explode(',', $boletosAsignados)));
-                    }
-                    log_message('info', "TransactionController::markAsPaid - boletos_asignados procesada: " . json_encode($boletosAsignados));
-                }
-
-                if (!empty($boletosAsignados)) {
-                    log_message('info', "TransactionController::markAsPaid - Confirmando " . count($boletosAsignados) . " boletos: " . json_encode($boletosAsignados));
-
-                    $boletosConfirmados = $this->ticketModel->confirmTickets($boletosAsignados);
-
-                    log_message('info', "TransactionController::markAsPaid - Boletos confirmados: {$boletosConfirmados}");
-
-                    if ($boletosConfirmados === 0) {
-                        log_message('warning', "TransactionController::markAsPaid - No se confirmaron boletos. Verificando estado de los tickets...");
-
-                        $tickets = $this->ticketModel->whereIn('id', $boletosAsignados)->findAll();
-                        log_message('info', "TransactionController::markAsPaid - Estado actual de los tickets: " . json_encode($tickets));
-                    }
-                } else {
-                    log_message('warning', "TransactionController::markAsPaid - boletos_asignados vacío después de decodificar");
-                }
-            } else {
-                log_message('warning', "TransactionController::markAsPaid - No hay boletos_asignados en la transacción");
-            }
+            log_message('info', "TransactionController::markAsPaid - Transacción aprobada exitosamente via AprobarPagoService");
 
             return $this->response->setJSON([
                 'status' => 'success',
