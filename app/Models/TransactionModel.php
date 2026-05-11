@@ -109,4 +109,12 @@ class TransactionModel extends Model
             'failed_at' => date('Y-m-d H:i:s'),
         ]) !== false;
     }
+
+    public function getExpiredProcessingTarjetaTransactions(): array
+    {
+        return $this->where('status', 'procesando_pago')
+            ->where('metodo_pago', 'tarjeta')
+            ->where('expired_at <=', date('Y-m-d H:i:s'))
+            ->findAll();
+    }
 }

@@ -226,6 +226,22 @@ class TicketModel extends Model
             ->findAll();
     }
 
+    public function releaseProcessingTicketsByTransaction(string $transaccionId): int
+    {
+        $this->db->table($this->table)
+            ->where('transaccion_id', $transaccionId)
+            ->where('status', self::STATUS_PROCESANDO)
+            ->update([
+                'status'          => self::STATUS_DISPONIBLE,
+                'transaccion_id'   => null,
+                'participant_id'   => null,
+                'reserved_at'      => null,
+                'expired_at'       => null,
+            ]);
+
+        return $this->db->affectedRows();
+    }
+
     public function cleanupExpiredReservations(int $hours = 2): int
     {
         $expiredTickets = $this->getExpiredReservedTickets($hours);

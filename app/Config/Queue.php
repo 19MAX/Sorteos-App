@@ -22,6 +22,7 @@ use CodeIgniter\Queue\Handlers\RedisHandler;
 use CodeIgniter\Queue\Interfaces\JobInterface;
 use CodeIgniter\Queue\Interfaces\QueueInterface;
 use App\Jobs\Email;
+use App\Jobs\LiberarBoletosJob;
 
 class Queue extends BaseQueue
 {
@@ -113,6 +114,7 @@ class Queue extends BaseQueue
      */
     public array $jobHandlers = [
             'email' => Email::class,
+            'liberar_boletos' => LiberarBoletosJob::class,
     ];
 
 }
