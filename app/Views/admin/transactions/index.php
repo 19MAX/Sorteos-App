@@ -31,7 +31,10 @@
                 </div>
             </div>
             <button id="btn-expire-expired" class="btn btn-warning">
-                <i class="ti ti-clock-hour"></i> Procesar transacciones expiradas
+                <i class="ti ti-clock-hour"></i> Procesar expiradas
+            </button>
+            <button id="btn-delete-old" class="btn btn-danger">
+                <i class="ti ti-trash"></i> Eliminar rechazadas/expiradas
             </button>
         </div>
     </div>
@@ -272,6 +275,53 @@
                 if (result.isConfirmed) {
                     $.ajax({
                         url: '<?= url_to('admin.transactions.expireExpired') ?>',
+                        type: 'POST',
+                        success: (res) => {
+                            if (res.status === 'success') {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Éxito',
+                                    text: res.message,
+                                    confirmButtonColor: '#198754'
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: res.message,
+                                    confirmButtonColor: '#dc3545'
+                                });
+                            }
+                        },
+                        error: () => {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Error de conexión',
+                                confirmButtonColor: '#dc3545'
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        $(document).on('click', '#btn-delete-old', function () {
+            Swal.fire({
+                title: '¿Eliminar transacciones?',
+                text: 'Se eliminarán todas las transacciones con estado "expirado" y "rechazada". Esta acción no se puede deshacer.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '<?= url_to('admin.transactions.deleteOld') ?>',
                         type: 'POST',
                         success: (res) => {
                             if (res.status === 'success') {

@@ -32,6 +32,7 @@ $routes->group('admin', ['filter' => 'adminauth'], function ($routes) {
     $routes->post('transactions/mark-as-paid', 'Admin\TransactionController::markAsPaid', ['as' => 'admin.transactions.markAsPaid']);
     $routes->post('transactions/reject', 'Admin\TransactionController::reject', ['as' => 'admin.transactions.reject']);
     $routes->post('transactions/expire-expired', 'Admin\TransactionController::expireExpired', ['as' => 'admin.transactions.expireExpired']);
+    $routes->post('transactions/delete-old', 'Admin\TransactionController::deleteOld', ['as' => 'admin.transactions.deleteOld']);
 
     $routes->group('settings', function ($routes) {
         $routes->get('config', 'Settings\ConfigController::index', ['as' => 'settings.config']);

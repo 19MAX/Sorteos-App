@@ -329,4 +329,36 @@ class TransactionController extends BaseController
             ]);
         }
     }
+
+    public function deleteOld()
+    {
+        try {
+            if (!$this->request->isAJAX()) {
+                return $this->response->setStatusCode(403)
+                    ->setJSON(['status' => 'error', 'message' => 'Acceso denegado']);
+            }
+
+            $db = \Config\Database::connect();
+
+            $deleted = $db->table('transactions')
+                ->whereIn('status', ['expirado', 'rechazada'])
+                ->delete();
+
+            $affected = $db->affectedRows();
+
+            log_message('info', "TransactionController::deleteOld - Eliminadas {$affected} transacciones");
+
+            return $this->response->setJSON([
+                'status' => 'success',
+                'message' => "{$affected} transacciones eliminadas correctamente"
+            ]);
+
+        } catch (\Exception $e) {
+            log_message('error', 'TransactionController::deleteOld - Excepción: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Error interno del servidor: ' . $e->getMessage()
+            ]);
+        }
+    }
 }
