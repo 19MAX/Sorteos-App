@@ -13,7 +13,7 @@
             <!-- Pages link -->
 
             <!-- Bell icon -->
-            <li>
+            <!-- <li>
                 <a class="position-relative btn-icon btn-sm btn-light btn rounded-circle" data-bs-toggle="dropdown"
                     aria-expanded="false" href="#" role="button">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -70,16 +70,35 @@
                         </li>
                     </ul>
                 </div>
-            </li>
+            </li> -->
             <!-- Dropdown -->
             <li class="ms-3 dropdown">
                 <a href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="./assets/images/avatar-1.jpg" alt="" class="avatar avatar-sm rounded-circle" />
+                    <div
+                        class="avatar avatar-md rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold">
+                        <?php
+                        $nombre = session()->get('admin_nombre') ?? 'Admin';
+                        $palabras = explode(' ', trim($nombre));
+
+                        $iniciales = '';
+
+                        foreach ($palabras as $p) {
+                            $iniciales .= strtoupper(substr($p, 0, 1));
+                            if (strlen($iniciales) >= 2)
+                                break;
+                        }
+                        ?>
+                        <?= esc($iniciales) ?>
+                    </div>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end p-0" style="min-width: 200px;">
                     <div>
                         <div class="d-flex gap-3 align-items-center border-dashed border-bottom px-3 py-3">
-                            <img src="./assets/images/avatar-1.jpg" alt="" class="avatar avatar-md rounded-circle" />
+
+                            <div
+                                class="avatar avatar-md rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold">
+                                <?= esc($iniciales) ?>
+                            </div>
                             <div>
                                 <h4 class="mb-0 small"><?= esc(session()->get('admin_nombre') ?? 'Admin') ?></h4>
                                 <p class="mb-0  small">@<?= esc(session()->get('admin_username') ?? 'admin') ?></p>

@@ -1,4 +1,7 @@
 <?= $this->extend('layout/mainAuth') ?>
+<?= $this->section('title') ?>
+Inicio de sesión
+<?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
 <div class="text-center mb-3">
@@ -7,7 +10,7 @@
             alt="" width="36">
         <span class=" ms-2"> <img src="./assets/images/logo.svg" alt=""></span>
     </a>
-    <h1 class="card-title mb-5 h5">Sign in to your account</h1>
+    <h1 class="card-title mb-5 h5">Inicia sesión</h1>
 </div>
 
 <?php if (session()->getFlashdata('error')): ?>
@@ -19,27 +22,27 @@
 
 <form class="needs-validation mt-3" method="POST" action="<?= site_url('/login') ?>" novalidate>
     <div class="mb-3">
-        <label for="username" class="form-label">Username</label>
-        <input id="username" name="username" type="text" class="form-control" placeholder="Enter your username" required autofocus>
-        <div class="invalid-feedback">Please enter your username.</div>
+        <label for="username" class="form-label">Nombre de usuario</label>
+        <input id="username" name="username" type="text" class="form-control" placeholder="Ingrese su nombre de usuario" required autofocus>
+        <div class="invalid-feedback">Ingrese su nombre de usuario.</div>
     </div>
 
     <div class="mb-3">
         <label for="password" class="form-label d-flex justify-content-between">
-            <span>Password</span>
-            <a href="#" class="small link-primary">Forgot Password?</a>
+            <span>Contraseña</span>
+            <!-- <a href="#" class="small link-primary">Forgot Password?</a> -->
         </label>
-        <input id="password" name="password" type="password" class="form-control" placeholder="Password" required minlength="6">
-        <div class="invalid-feedback">Please provide a password (min 6 characters).</div>
+        <input id="password" name="password" type="password" class="form-control" placeholder="Contraseña" required minlength="6">
+        <div class="invalid-feedback">Ingrese una contraseña (mínimo 6 caracteres).</div>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <!-- <div class="d-flex justify-content-between align-items-center mb-3">
         <div class="form-check">
             <input id="remember" class="form-check-input" type="checkbox">
             <label class="form-check-label small" for="remember">Remember me</label>
         </div>
-    </div>
+    </div> -->
 
-    <button class="btn btn-primary w-100" type="submit">Sign in</button>
+    <button class="btn btn-primary w-100" type="submit">Iniciar sesión</button>
 </form>
 <?= $this->endSection() ?>

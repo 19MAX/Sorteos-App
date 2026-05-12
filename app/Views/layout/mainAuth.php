@@ -10,9 +10,9 @@
             <div class="card-body p-5">
                 <?= $this->renderSection('content') ?>
 
-                <div class="text-center mt-3 small text-muted">
+                <!-- <div class="text-center mt-3 small text-muted">
                     Don't have an account? <a href="signup.html" class="link-primary">Sign up</a>
-                </div>
+                </div> -->
             </div>
         </div>
     </div>

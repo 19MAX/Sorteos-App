@@ -23,7 +23,7 @@ $routes->group('admin', ['filter' => 'adminauth'], function ($routes) {
     $routes->post('tickets/generate-process', 'Admin\TicketsController::generate', ['as' => 'admin.tickets.generate.process']);
     $routes->get('tickets/data', 'Admin\TicketsController::data', ['as' => 'admin.tickets.data', 'filter' => 'adminauth']);
     $routes->get('tickets/export', 'Admin\TicketsController::export', ['as' => 'admin.tickets.export', 'filter' => 'adminauth']);
-    $routes->get('tickets/:id', 'Admin\TicketsController::show', ['as' => 'admin.tickets.show', 'filter' => 'adminauth']);
+    $routes->get('tickets/(:num)', 'Admin\TicketsController::show/$1', ['as' => 'admin.tickets.show', 'filter' => 'adminauth']);
 
     // Transactions
     $routes->get('transactions', 'Admin\TransactionController::index', ['as' => 'admin.transactions.index']);
