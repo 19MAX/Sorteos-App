@@ -9,7 +9,27 @@
             <h1 class="fs-3 mb-1"><?= esc($title) ?></h1>
             <p>Administra las transacciones del sistema.</p>
         </div>
-        <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex gap-3">
+                <div>
+                    <label for="filter-metodo" class="form-label small fw-medium">Método de pago</label>
+                    <select id="filter-metodo" class="form-select form-select-sm" style="width: 160px;">
+                        <option value="">Todos</option>
+                        <?php foreach (transaction_method_list() as $key => $label): ?>
+                            <option value="<?= esc($key) ?>" <?= ($filterMetodo === $key) ? 'selected' : '' ?>><?= esc($label) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
+                    <label for="filter-status" class="form-label small fw-medium">Estado</label>
+                    <select id="filter-status" class="form-select form-select-sm" style="width: 140px;">
+                        <option value="">Todos</option>
+                        <?php foreach (transaction_status_list() as $key => $label): ?>
+                            <option value="<?= esc($key) ?>" <?= ($filterStatus === $key) ? 'selected' : '' ?>><?= esc($label) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
             <button id="btn-expire-expired" class="btn btn-warning">
                 <i class="ti ti-clock-hour"></i> Procesar transacciones expiradas
             </button>
@@ -53,6 +73,11 @@
                                 ?>
                             </td>
                             <td>
+                                <?php if ($tx['status'] === 'completado'): ?>
+                                    <a href="<?= url_to('admin.transactions.tickets', $tx['id']) ?>" class="btn btn-sm btn-outline-info" title="Ver boletos">
+                                        <i class="ti ti-ticket"></i>
+                                    </a>
+                                <?php endif; ?>
                                 <?php if (is_transaction_pending($tx['status'])): ?>
                                     <div class="d-flex gap-1">
                                         <button class="btn btn-sm btn-success btn-pay" data-id="<?= $tx['id'] ?>" title="Marcar como pagada">
@@ -91,6 +116,33 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const filterMetodo = document.getElementById('filter-metodo');
+        const filterStatus = document.getElementById('filter-status');
+
+        function applyFilters() {
+            const params = new URLSearchParams(window.location.search);
+            const metodo = filterMetodo.value;
+            const status = filterStatus.value;
+
+            if (metodo) {
+                params.set('metodo', metodo);
+            } else {
+                params.delete('metodo');
+            }
+
+            if (status) {
+                params.set('status', status);
+            } else {
+                params.delete('status');
+            }
+
+            const url = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+            window.location.href = url;
+        }
+
+        filterMetodo.addEventListener('change', applyFilters);
+        filterStatus.addEventListener('change', applyFilters);
+
         new DataTable('#transactionsTable', {
             language: { url: 'https://cdn.datatables.net/plug-ins/2.3.7/i18n/es-ES.json' },
             scrollX: true,

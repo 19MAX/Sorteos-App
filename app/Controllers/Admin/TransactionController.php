@@ -28,17 +28,31 @@ class TransactionController extends BaseController
     {
         $db = \Config\Database::connect();
 
-        $transactions = $db->table('transactions t')
+        $metodo = $this->request->getGet('metodo') ?? '';
+        $status = $this->request->getGet('status') ?? '';
+
+        $builder = $db->table('transactions t')
             ->select('t.id, t.transaccion_id, t.cantidad_boletos, t.total, t.metodo_pago, t.status, t.created_at, t.completed_at, t.expired_at,
                       p.nombres, p.apellidos, p.cedula, p.email')
-            ->join('participants p', 'p.id = t.participant_id', 'left')
-            ->orderBy('t.created_at', 'DESC')
+            ->join('participants p', 'p.id = t.participant_id', 'left');
+
+        if (!empty($metodo)) {
+            $builder->where('t.metodo_pago', $metodo);
+        }
+
+        if (!empty($status)) {
+            $builder->where('t.status', $status);
+        }
+
+        $transactions = $builder->orderBy('t.created_at', 'DESC')
             ->get()
             ->getResultArray();
 
         $data = [
             'title' => 'Transacciones',
             'transactions' => $transactions,
+            'filterMetodo' => $metodo,
+            'filterStatus' => $status,
         ];
 
         return view('admin/transactions/index', $data);
@@ -192,6 +206,35 @@ class TransactionController extends BaseController
                 'message' => 'Error interno del servidor: ' . $e->getMessage()
             ]);
         }
+    }
+
+    public function tickets(int $transactionId)
+    {
+        helper('ticket');
+        $transaction = $this->transactionModel->find($transactionId);
+
+        if (!$transaction) {
+            return redirect()->to(url_to('admin.transactions.index'))
+                ->with('error', 'Transacción no encontrada');
+        }
+
+        if ($transaction['status'] !== 'completado') {
+            return redirect()->to(url_to('admin.transactions.index'))
+                ->with('error', 'Solo se pueden ver los boletos de transacciones completadas');
+        }
+
+        $tickets = $this->ticketModel->where('transaccion_id', $transaction['transaccion_id'])->findAll();
+
+        $participant = $this->participantModel->find($transaction['participant_id']);
+
+        $data = [
+            'title' => 'Boletos de Transacción',
+            'transaction' => $transaction,
+            'tickets' => $tickets,
+            'participant' => $participant,
+        ];
+
+        return view('admin/transactions/tickets', $data);
     }
 
     public function expireExpired()

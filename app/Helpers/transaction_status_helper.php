@@ -67,8 +67,8 @@ if (!function_exists('transaction_method_badge')) {
     {
         $map = [
             'fisico'        => ['bg-info text-dark', 'Físico'],
-            'transferencia' => ['bg-primary',       'Transferencia'],
-            'tarjeta'       => ['bg-success',        'Tarjeta'],
+            'transferencia' => ['badge bg-warning text-dark',       'Transferencia'],
+            'tarjeta'       => ['badge bg-primary',        'Tarjeta'],
         ];
 
         [$classes, $label] = $map[$method] ?? ['bg-secondary', ucfirst(esc($method))];

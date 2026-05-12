@@ -10,11 +10,11 @@ if (!function_exists('ticket_status_badge')) {
     function ticket_status_badge(string $status): string
     {
         $map = [
-            'disponible'  => ['bg-success',          'Disponible'],
+            'disponible'  => ['bg-primary',          'Disponible'],
             'reservado'   => ['bg-warning text-dark', 'Reservado'],
             'procesando'  => ['bg-info text-dark',    'Procesando'],
             'vendido'     => ['bg-dark',              'Vendido'],
-            'pagado'      => ['bg-primary',           'Pagado'],
+            'pagado'      => ['bg-success',           'Pagado'],
             'asignado'    => ['bg-purple',            'Asignado'],   // ver nota CSS abajo
             'expirado'    => ['bg-secondary',         'Expirado'],
         ];

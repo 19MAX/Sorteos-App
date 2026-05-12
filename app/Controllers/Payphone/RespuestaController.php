@@ -2,6 +2,7 @@
 namespace App\Controllers\Payphone;
 
 use App\Controllers\BaseController;
+use App\Models\PayphoneTransactionModel;
 use TransactionStatus;
 
 class RespuestaController extends BaseController
@@ -70,6 +71,28 @@ class RespuestaController extends BaseController
                 return $this->viewError('No se pudo completar la aprobación del pago.');
             }
         }
+
+        // ── 5. Guardar datos de Payphone en payphone_transactions ─────────────
+        $payphoneData = $confirmationResult['data'] ?? [];
+        $payphoneTransactionModel = new PayphoneTransactionModel();
+        $payphoneTransactionModel->insert([
+            'transaction_id'        => $transaction['id'],
+            'client_transaction_id' => $clientTransactionId,
+            'email'                 => $payphoneData['email'] ?? null,
+            'amount'                => $payphoneData['amount'] ?? null,
+            'phone_number'          => $payphoneData['phoneNumber'] ?? null,
+            'status_code'           => $payphoneData['statusCode'] ?? null,
+            'transaction_status'    => $payphoneData['transactionStatus'] ?? null,
+            'authorization_code'    => $payphoneData['authorizationCode'] ?? null,
+            'message'               => $payphoneData['message'] ?? null,
+            'message_code'          => $payphoneData['messageCode'] ?? null,
+            'payphone_transaction_id' => $payphoneData['transactionId'] ?? null,
+            'document'              => $payphoneData['document'] ?? null,
+            'currency'              => $payphoneData['currency'] ?? null,
+            'transaction_date'      => isset($payphoneData['date']) ? date('Y-m-d H:i:s', strtotime($payphoneData['date'])) : null,
+            'card_type'             => $payphoneData['cardType'] ?? null,
+            'card_brand'            => $payphoneData['cardBrand'] ?? null,
+        ]);
         // ── 6. Respuesta exitosa ───────────────────────────────────────────────
         return view('payphone/respuesta', [
             'success' => true,

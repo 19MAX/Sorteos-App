@@ -312,7 +312,7 @@
                     render: (d) => {
                         if (!d) return '<span class="text-muted">-</span>';
                         const badges = {
-                            'tarjeta'      : '<span class="badge bg-info">Tarjeta</span>',
+                            'tarjeta'      : '<span class="badge bg-primary">Tarjeta</span>',
                             'transferencia': '<span class="badge bg-warning text-dark">Transferencia</span>',
                             'fisico'       : '<span class="badge bg-secondary">Físico</span>',
                         };

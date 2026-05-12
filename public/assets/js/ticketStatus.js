@@ -16,11 +16,11 @@ const TicketStatus = (() => {
 
     /** @type {Record<string, { classes: string, label: string }>} */
     const STATUS_MAP = {
-        disponible : { classes: 'bg-success',              label: 'Disponible' },
+        disponible : { classes: 'bg-primary',              label: 'Disponible' },
         reservado  : { classes: 'bg-warning text-dark',    label: 'Reservado'  },
         procesando : { classes: 'bg-info text-dark',       label: 'Procesando' },
         vendido    : { classes: 'bg-dark',                 label: 'Vendido'    },
-        pagado     : { classes: 'bg-primary',              label: 'Pagado'     },
+        pagado     : { classes: 'bg-success',              label: 'Pagado'     },
         asignado   : { classes: 'bg-purple',               label: 'Asignado'   },
         expirado   : { classes: 'bg-secondary',            label: 'Expirado'   },
     };

@@ -27,6 +27,8 @@ $routes->group('admin', ['filter' => 'adminauth'], function ($routes) {
 
     // Transactions
     $routes->get('transactions', 'Admin\TransactionController::index', ['as' => 'admin.transactions.index']);
+    $routes->get('transactions/(:num)/tickets', 'Admin\TransactionController::tickets/$1', ['as' => 'admin.transactions.tickets']);
+    $routes->get('payphone-transactions', 'Admin\PayphoneTransactionController::index', ['as' => 'admin.payphoneTransactions.index']);
     $routes->post('transactions/mark-as-paid', 'Admin\TransactionController::markAsPaid', ['as' => 'admin.transactions.markAsPaid']);
     $routes->post('transactions/reject', 'Admin\TransactionController::reject', ['as' => 'admin.transactions.reject']);
     $routes->post('transactions/expire-expired', 'Admin\TransactionController::expireExpired', ['as' => 'admin.transactions.expireExpired']);
