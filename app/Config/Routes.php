@@ -8,6 +8,7 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'Home\HomeController::index');
 $routes->get('/comprar', 'Home\HomeController::comprar');
 $routes->get('/mis-boletos', 'Home\HomeController::misBoletos');
+$routes->post('/buscar-boletos', 'Home\HomeController::buscarBoletos');
 
 $routes->get('/login', 'Auth\LoginController::index');
 $routes->post('/login', 'Auth\LoginController::login');
@@ -20,7 +21,9 @@ $routes->group('admin', ['filter' => 'adminauth'], function ($routes) {
     // Tickets
     $routes->get('tickets/generate', 'Admin\TicketsController::index', ['as' => 'admin.tickets.generate']);
     $routes->post('tickets/generate-process', 'Admin\TicketsController::generate', ['as' => 'admin.tickets.generate.process']);
-    $routes->get('tickets/data', 'Admin\TicketsController::data', ['as' => 'admin.tickets.data']);
+    $routes->get('tickets/data', 'Admin\TicketsController::data', ['as' => 'admin.tickets.data', 'filter' => 'adminauth']);
+    $routes->get('tickets/export', 'Admin\TicketsController::export', ['as' => 'admin.tickets.export', 'filter' => 'adminauth']);
+    $routes->get('tickets/:id', 'Admin\TicketsController::show', ['as' => 'admin.tickets.show', 'filter' => 'adminauth']);
 
     // Transactions
     $routes->get('transactions', 'Admin\TransactionController::index', ['as' => 'admin.transactions.index']);

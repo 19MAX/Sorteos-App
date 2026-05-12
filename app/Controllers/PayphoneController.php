@@ -89,9 +89,22 @@ class PayphoneController extends BaseController
                 'nombres' => $nameParts['nombres'],
                 'apellidos' => $nameParts['apellidos'],
                 'email' => $data['email'] ?? '',
-                'cedula' => $data['cedula'] ?? '', 
+                'cedula' => $data['cedula'] ?? '',
                 'telefono' => $data['whatsapp'] ?? '',
             ]);
+
+            $pendingTx = $this->transactionModel->hasPendingTransactionByParticipant($participant['id']);
+            if ($pendingTx) {
+                return $this->response
+                    ->setStatusCode(409)
+                    ->setJSON([
+                        'success' => false,
+                        'message' => 'Ya tienes una transacción a la espera de ser aprobada.',
+                        'transaccion_id' => $pendingTx['transaccion_id'],
+                        'status' => $pendingTx['status'],
+                        'csrfHash' => csrf_hash()
+                    ]);
+            }
 
             if (!$participant) {
                 return $this->response

@@ -12,6 +12,67 @@
     </div>
 </div>
 
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-2">
+                        <label for="filterStatus" class="form-label small fw-semibold">Estado</label>
+                        <select id="filterStatus" class="form-select form-select-sm">
+                            <option value="">Todos</option>
+                            <option value="disponible">Disponible</option>
+                            <option value="reservado">Reservado</option>
+                            <option value="procesando">Procesando</option>
+                            <option value="vendido">Vendido</option>
+                            <option value="pagado">Pagado</option>
+                            <option value="asignado">Asignado</option>
+                            <option value="expirado">Expirado</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="filterReservedFrom" class="form-label small fw-semibold">Reservación desde</label>
+                        <input type="date" id="filterReservedFrom" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="filterReservedTo" class="form-label small fw-semibold">Reservación hasta</label>
+                        <input type="date" id="filterReservedTo" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="filterConfirmedFrom" class="form-label small fw-semibold">Confirmación desde</label>
+                        <input type="date" id="filterConfirmedFrom" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="filterConfirmedTo" class="form-label small fw-semibold">Confirmación hasta</label>
+                        <input type="date" id="filterConfirmedTo" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="filterParticipant" class="form-label small fw-semibold">Participante</label>
+                        <input type="text" id="filterParticipant" class="form-control form-control-sm" placeholder="Nombre, email, cédula...">
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-3">
+                        <label for="filterTransaccion" class="form-label small fw-semibold">Transacción</label>
+                        <input type="text" id="filterTransaccion" class="form-control form-control-sm" placeholder="ID transacción...">
+                    </div>
+                    <div class="col-md-9 d-flex align-items-end">
+                        <button id="btnApplyFilters" class="btn btn-primary btn-sm me-2">
+                            <i class="ti ti-search me-1"></i> Aplicar Filtros
+                        </button>
+                        <button id="btnClearFilters" class="btn btn-outline-secondary btn-sm me-2">
+                            <i class="ti ti-x me-1"></i> Limpiar
+                        </button>
+                        <button id="btnExportExcel" class="btn btn-success btn-sm">
+                            <i class="ti ti-file-export me-1"></i> Exportar Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <div class="col-12">
         <div class="card table-responsive py-2">
@@ -20,12 +81,17 @@
                     <tr>
                         <th>Número</th>
                         <th>Estado</th>
-                        <th>Creado el</th>
-                        <th>Actualizado el</th>
+                        <th>Participante</th>
+                        <th>Teléfono</th>
+                        <th>Transacción</th>
+                        <th>Método Pago</th>
+                        <th>Reserved At</th>
+                        <th>Confirmed At</th>
+                        <th>Creado</th>
+                        <th>Actualizado</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- ← Vacío: DataTables lo llena vía AJAX -->
                 </tbody>
             </table>
         </div>
@@ -33,7 +99,6 @@
 </div>
 
 <!-- ===== MODAL GENERAR BOLETOS ===== -->
-<!-- (sin cambios, igual que antes) -->
 <div id="generateModal" class="modal fade" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -93,6 +158,23 @@
         </div>
     </div>
 </div>
+
+<!-- ===== MODAL VER DETALLES ===== -->
+<div id="detailsModal" class="modal fade" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalles del Boleto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detailsModalContent">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
@@ -106,7 +188,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-
         const table = new DataTable('#ticketsTable', {
             language: { url: 'https://cdn.datatables.net/plug-ins/2.3.7/i18n/es-ES.json' },
             serverSide: true,
@@ -115,18 +196,39 @@
             ajax: {
                 url: '<?= url_to('admin.tickets.data') ?>',
                 type: 'GET',
+                data: function (d) {
+                    d.status = $('#filterStatus').val();
+                    d.reserved_from = $('#filterReservedFrom').val();
+                    d.reserved_to = $('#filterReservedTo').val();
+                    d.confirmed_from = $('#filterConfirmedFrom').val();
+                    d.confirmed_to = $('#filterConfirmedTo').val();
+                    d.participant = $('#filterParticipant').val();
+                    d.transaccion = $('#filterTransaccion').val();
+                },
             },
             columns: [
                 { data: 'numero', render: (d) => `<span class="fw-bold">${d}</span>` },
                 { data: 'status', render: (d) => TicketStatus.renderBadge(d) },
-                {
-                    // Creado el
-                    data: 'created_at',
-                },
-                {
-                    // Actualizado el
-                    data: 'updated_at',
-                },
+                { data: 'nombres', render: (d, type, row) => {
+                    if (!d) return '<span class="text-muted">-</span>';
+                    return `<span class="text-truncate d-inline-block" style="max-width:120px;">${d} ${row.apellidos || ''}</span>`;
+                }},
+                { data: 'telefono', render: (d) => d || '<span class="text-muted">-</span>' },
+                { data: 'transaccion_code', render: (d) => d ? `<span class="text-primary small">${d}</span>` : '<span class="text-muted">-</span>' },
+                { data: 'metodo_pago', render: (d) => {
+                    if (!d) return '<span class="text-muted">-</span>';
+                    const badges = {
+                        'tarjeta': '<span class="badge bg-info">Tarjeta</span>',
+                        'transferencia': '<span class="badge bg-warning text-dark">Transferencia</span>',
+                        'fisico': '<span class="badge bg-secondary">Físico</span>'
+                    };
+                    return badges[d] || `<span class="badge bg-light text-dark">${d}</span>`;
+                }},
+                { data: 'reserved_at', render: (d) => d ? `<span class="small text-muted">${d.split(' ')[0]}</span>` : '<span class="text-muted">-</span>' },
+                { data: 'confirmed_at', render: (d) => d ? `<span class="small text-muted">${d.split(' ')[0]}</span>` : '<span class="text-muted">-</span>' },
+                { data: 'created_at', render: (d) => `<span class="small text-muted">${d.split(' ')[0]}</span>` },
+                { data: 'updated_at', render: (d) => `<span class="small text-muted">${d.split(' ')[0]}</span>` },
+
             ],
             layout: {
                 topStart: {
@@ -142,6 +244,86 @@
                 },
             },
         });
+
+        // Filtros
+        $('#btnApplyFilters').on('click', function () {
+            table.ajax.reload();
+        });
+
+        $('#btnClearFilters').on('click', function () {
+            $('#filterStatus').val('');
+            $('#filterReservedFrom').val('');
+            $('#filterReservedTo').val('');
+            $('#filterConfirmedFrom').val('');
+            $('#filterConfirmedTo').val('');
+            $('#filterParticipant').val('');
+            $('#filterTransaccion').val('');
+            table.ajax.reload();
+        });
+
+        // Exportar Excel
+        $('#btnExportExcel').on('click', function () {
+            const params = new URLSearchParams({
+                status: $('#filterStatus').val(),
+                reserved_from: $('#filterReservedFrom').val(),
+                reserved_to: $('#filterReservedTo').val(),
+                confirmed_from: $('#filterConfirmedFrom').val(),
+                confirmed_to: $('#filterConfirmedTo').val(),
+                participant: $('#filterParticipant').val(),
+                transaccion: $('#filterTransaccion').val(),
+            });
+            window.location.href = '<?= url_to('admin.tickets.export') ?>?' + params.toString();
+        });
+
+        // Ver detalles del boleto
+        window.viewTicketDetails = function (id) {
+            fetch(`<?= url_to('admin.tickets.show', ['id' => '__ID__']) ?>`.replace('__ID__', id), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+                .then(r => r.json())
+                .then(resp => {
+                    if (!resp.data || !resp.data.length) {
+                        alert('Boleto no encontrado.');
+                        return;
+                    }
+                    const row = resp.data[0];
+                    const content = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="fw-bold mb-3">Información del Boleto</h6>
+                                <table class="table table-sm table-borderless">
+                                    <tr><td class="text-muted fw-semibold">ID</td><td>${row.id}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Número</td><td class="fw-bold">${row.numero}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Estado</td><td>${TicketStatus.renderBadge(row.status)}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Creado</td><td>${row.created_at}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Actualizado</td><td>${row.updated_at || '-'}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Reserved At</td><td>${row.reserved_at || '-'}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Confirmed At</td><td>${row.confirmed_at || '-'}</td></tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="fw-bold mb-3">Información del Participante</h6>
+                                <table class="table table-sm table-borderless">
+                                    <tr><td class="text-muted fw-semibold">Nombre</td><td>${row.nombres || '-'} ${row.apellidos || ''}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Teléfono</td><td>${row.telefono || '-'}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Email</td><td>${row.email || '-'}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Cédula</td><td>${row.cedula || '-'}</td></tr>
+                                </table>
+                                <h6 class="fw-bold mb-3 mt-4">Información de Transacción</h6>
+                                <table class="table table-sm table-borderless">
+                                    <tr><td class="text-muted fw-semibold">Transacción</td><td>${row.transaccion_code || '-'}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Método Pago</td><td>${row.metodo_pago || '-'}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Status Transacción</td><td>${row.transaccion_status || '-'}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Total Transacción</td><td>${row.total || '-'}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Cantidad Boletos</td><td>${row.cantidad_boletos || '-'}</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                    $('#detailsModalContent').html(content);
+                    new bootstrap.Modal(document.getElementById('detailsModal')).show();
+                });
+        };
 
         // ── Lógica de generación por lotes (sin cambios) ──────────────
         const btnGenerar = document.getElementById('btnGenerar');
@@ -188,7 +370,6 @@
                             statusMessage.innerHTML = '<i class="ti ti-check me-2"></i> ' + data.message;
                             if (btnGenerar) btnGenerar.style.display = 'none';
 
-                            // ← Recargar solo la tabla, no toda la página
                             table.ajax.reload();
 
                         } else {

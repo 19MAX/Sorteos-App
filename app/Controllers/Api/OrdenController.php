@@ -82,6 +82,21 @@ class OrdenController extends BaseController
 
             $participant = $this->participantModel->findByCedula($data['cedula'] ?? '');
 
+            if ($participant) {
+                $pendingTx = $this->transactionModel->hasPendingTransactionByParticipant($participant['id']);
+                if ($pendingTx) {
+                    return $this->response
+                        ->setStatusCode(409)
+                        ->setJSON([
+                            'success' => false,
+                            'message' => 'Ya tienes una transacción a la espera de ser aprobada.',
+                            'transaccion_id' => $pendingTx['transaccion_id'],
+                            'status' => $pendingTx['status'],
+                            'csrfHash' => csrf_hash()
+                        ]);
+                }
+            }
+
             if (!$participant) {
                 $nameParts = $this->splitName($data['nombre'] ?? '');
                 $this->participantModel->skipValidation(true)->insert([

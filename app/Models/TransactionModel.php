@@ -117,4 +117,11 @@ class TransactionModel extends Model
             ->where('expired_at <=', date('Y-m-d H:i:s'))
             ->findAll();
     }
+
+    public function hasPendingTransactionByParticipant(int $participantId): ?array
+    {
+        return $this->where('participant_id', $participantId)
+            ->whereIn('status', ['pendiente', 'procesando_pago'])
+            ->first();
+    }
 }

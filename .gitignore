@@ -4,6 +4,7 @@
 
 uploads/
 .agents
+exports/
 # OS X
 .DS_Store
 .AppleDouble

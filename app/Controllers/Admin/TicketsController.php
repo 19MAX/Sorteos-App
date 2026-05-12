@@ -6,6 +6,10 @@ use App\Controllers\BaseController;
 use App\Helpers\DataTablesHelper;
 use App\Models\SettingsModel;
 use App\Models\TicketModel;
+use App\Models\ParticipantModel;
+use App\Models\TransactionModel;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class TicketsController extends BaseController
 {
@@ -47,15 +51,164 @@ class TicketsController extends BaseController
         }
 
         $db = \Config\Database::connect();
-        $builder = $db->table('tickets')
-            ->select('id, numero, status, created_at, updated_at');
+        $builder = $db->table('tickets t')
+            ->select('t.id, t.numero, t.status, t.created_at, t.updated_at, t.reserved_at, t.confirmed_at,
+                      p.id as participant_db_id, p.nombres, p.apellidos, p.telefono, p.email, p.cedula,
+                      tr.id as transaccion_db_id, tr.transaccion_id as transaccion_code, tr.metodo_pago, tr.status as transaccion_status, tr.total, tr.cantidad_boletos')
+            ->join('participants p', 'p.id = t.participant_id', 'left')
+            ->join('transactions tr', 'tr.transaccion_id = t.transaccion_id', 'left');
 
-        $columns = ['numero', 'status', 'created_at', 'updated_at'];
-        $searchable = ['numero', 'status'];   // columnas donde aplica búsqueda global
+        // Filtros personalizados
+        $status = $this->request->getGet('status');
+        $reservedFrom = $this->request->getGet('reserved_from');
+        $reservedTo = $this->request->getGet('reserved_to');
+        $confirmedFrom = $this->request->getGet('confirmed_from');
+        $confirmedTo = $this->request->getGet('confirmed_to');
+        $participant = $this->request->getGet('participant');
+        $transaccion = $this->request->getGet('transaccion');
+
+        if (!empty($status)) {
+            $builder->where('t.status', $status);
+        }
+        if (!empty($reservedFrom)) {
+            $builder->where('t.reserved_at >=', $reservedFrom . ' 00:00:00');
+        }
+        if (!empty($reservedTo)) {
+            $builder->where('t.reserved_at <=', $reservedTo . ' 23:59:59');
+        }
+        if (!empty($confirmedFrom)) {
+            $builder->where('t.confirmed_at >=', $confirmedFrom . ' 00:00:00');
+        }
+        if (!empty($confirmedTo)) {
+            $builder->where('t.confirmed_at <=', $confirmedTo . ' 23:59:59');
+        }
+        if (!empty($participant)) {
+            $builder->groupStart()
+                ->like('p.nombres', $participant)
+                ->orLike('p.apellidos', $participant)
+                ->orLike('p.email', $participant)
+                ->orLike('p.cedula', $participant)
+            ->groupEnd();
+        }
+        if (!empty($transaccion)) {
+            $builder->like('tr.transaccion_id', $transaccion);
+        }
+
+        $columns = ['numero', 'status', 'created_at', 'updated_at', 'reserved_at', 'confirmed_at',
+                    'nombres', 'apellidos', 'telefono', 'transaccion_code', 'metodo_pago'];
+        $searchable = ['t.numero', 't.status', 'p.nombres', 'p.apellidos', 'p.email', 'tr.transaccion_id'];
 
         return $this->response->setJSON(
             DataTablesHelper::response($this->request, $builder, $columns, $searchable)
         );
+    }
+
+    /**
+     * Exportación de boletos a Excel
+     * GET admin/tickets/export
+     */
+    public function export()
+    {
+        $db = \Config\Database::connect();
+        $builder = $db->table('tickets t')
+            ->select('t.id, t.numero, t.status, t.created_at, t.updated_at, t.reserved_at, t.confirmed_at,
+                      p.id as participant_db_id, p.nombres, p.apellidos, p.telefono, p.email, p.cedula,
+                      tr.id as transaccion_db_id, tr.transaccion_id as transaccion_code, tr.metodo_pago, tr.status as transaccion_status, tr.total, tr.cantidad_boletos')
+            ->join('participants p', 'p.id = t.participant_id', 'left')
+            ->join('transactions tr', 'tr.transaccion_id = t.transaccion_id', 'left');
+
+        // Aplicar mismos filtros que en data()
+        $status = $this->request->getGet('status');
+        $reservedFrom = $this->request->getGet('reserved_from');
+        $reservedTo = $this->request->getGet('reserved_to');
+        $confirmedFrom = $this->request->getGet('confirmed_from');
+        $confirmedTo = $this->request->getGet('confirmed_to');
+        $participant = $this->request->getGet('participant');
+        $transaccion = $this->request->getGet('transaccion');
+
+        if (!empty($status)) {
+            $builder->where('t.status', $status);
+        }
+        if (!empty($reservedFrom)) {
+            $builder->where('t.reserved_at >=', $reservedFrom . ' 00:00:00');
+        }
+        if (!empty($reservedTo)) {
+            $builder->where('t.reserved_at <=', $reservedTo . ' 23:59:59');
+        }
+        if (!empty($confirmedFrom)) {
+            $builder->where('t.confirmed_at >=', $confirmedFrom . ' 00:00:00');
+        }
+        if (!empty($confirmedTo)) {
+            $builder->where('t.confirmed_at <=', $confirmedTo . ' 23:59:59');
+        }
+        if (!empty($participant)) {
+            $builder->groupStart()
+                ->like('p.nombres', $participant)
+                ->orLike('p.apellidos', $participant)
+                ->orLike('p.email', $participant)
+                ->orLike('p.cedula', $participant)
+            ->groupEnd();
+        }
+        if (!empty($transaccion)) {
+            $builder->like('tr.transaccion_id', $transaccion);
+        }
+
+        $builder->orderBy('t.id', 'asc');
+
+        $tickets = $builder->get()->getResultArray();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Encabezados
+        $headers = [
+            'ID', 'Número', 'Estado', 'Participante', 'Teléfono', 'Email', 'Cédula',
+            'Transacción', 'Método de Pago', 'Status Transacción', 'Total Transacción', 'Cantidad Boletos',
+            'Fecha Reservación', 'Fecha Confirmación', 'Creado', 'Actualizado'
+        ];
+        $sheet->fromArray($headers, null, 'A1');
+        $sheet->getStyle('A1:P1')->getFont()->setBold(true);
+
+        // Datos
+        $row = 2;
+        foreach ($tickets as $ticket) {
+            $sheet->setCellValue('A' . $row, $ticket['id']);
+            $sheet->setCellValue('B' . $row, $ticket['numero']);
+            $sheet->setCellValue('C' . $row, $ticket['status']);
+            $sheet->setCellValue('D' . $row, trim(($ticket['nombres'] ?? '') . ' ' . ($ticket['apellidos'] ?? '')));
+            $sheet->setCellValue('E' . $row, $ticket['telefono'] ?? '');
+            $sheet->setCellValue('F' . $row, $ticket['email'] ?? '');
+            $sheet->setCellValue('G' . $row, $ticket['cedula'] ?? '');
+            $sheet->setCellValue('H' . $row, $ticket['transaccion_code'] ?? '');
+            $sheet->setCellValue('I' . $row, $ticket['metodo_pago'] ?? '');
+            $sheet->setCellValue('J' . $row, $ticket['transaccion_status'] ?? '');
+            $sheet->setCellValue('K' . $row, $ticket['total'] ?? '');
+            $sheet->setCellValue('L' . $row, $ticket['cantidad_boletos'] ?? '');
+            $sheet->setCellValue('M' . $row, $ticket['reserved_at'] ?? '');
+            $sheet->setCellValue('N' . $row, $ticket['confirmed_at'] ?? '');
+            $sheet->setCellValue('O' . $row, $ticket['created_at']);
+            $sheet->setCellValue('P' . $row, $ticket['updated_at']);
+            $row++;
+        }
+
+        // Auto width
+        foreach (range('A', 'P') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $writer = new Xlsx($spreadsheet);
+        $filename = 'boletos_export_' . date('Y-m-d_His') . '.xlsx';
+        $filepath = WRITEPATH . 'exports/' . $filename;
+
+        if (!is_dir(WRITEPATH . 'exports')) {
+            mkdir(WRITEPATH . 'exports', 0777, true);
+        }
+
+        $writer->save($filepath);
+
+        return $this->response->download($filepath, null)
+            ->setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"');
     }
 
 
@@ -146,5 +299,33 @@ class TicketsController extends BaseController
                 'message' => 'Error al generar boletos: ' . $e->getMessage()
             ]);
         }
+    }
+
+    /**
+     * Get single ticket details for modal
+     * GET admin/tickets/:id
+     */
+    public function show($id)
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(403)->setJSON(['error' => 'Acceso denegado']);
+        }
+
+        $db = \Config\Database::connect();
+        $ticket = $db->table('tickets t')
+            ->select('t.id, t.numero, t.status, t.created_at, t.updated_at, t.reserved_at, t.confirmed_at,
+                      p.id as participant_db_id, p.nombres, p.apellidos, p.telefono, p.email, p.cedula,
+                      tr.id as transaccion_db_id, tr.transaccion_id as transaccion_code, tr.metodo_pago, tr.status as transaccion_status, tr.total, tr.cantidad_boletos')
+            ->join('participants p', 'p.id = t.participant_id', 'left')
+            ->join('transactions tr', 'tr.transaccion_id = t.transaccion_id', 'left')
+            ->where('t.id', $id)
+            ->get()
+            ->getRowArray();
+
+        if (!$ticket) {
+            return $this->response->setStatusCode(404)->setJSON(['error' => 'Boleto no encontrado']);
+        }
+
+        return $this->response->setJSON(['data' => [$ticket]]);
     }
 }

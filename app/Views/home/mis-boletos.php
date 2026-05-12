@@ -118,56 +118,105 @@
         <p>© 2026 Quickluck. Todos los derechos reservados.</p>
     </footer>
 
+    <!-- Modal Tickets -->
+    <div id="tickets-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-brand-card border border-white/10 rounded-3xl w-full max-w-lg pointer-events-auto transform scale-95 opacity-0 transition-all duration-200" id="modal-content">
+                <div class="p-6 border-b border-white/5 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Mis Boletos</h3>
+                        <p id="modal-tx-id" class="text-xs text-brand-muted mt-1"></p>
+                    </div>
+                    <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-brand-muted hover:text-white transition-colors">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <div id="modal-tickets" class="grid grid-cols-5 gap-2"></div>
+                </div>
+                <div class="p-4 border-t border-white/5">
+                    <button onclick="closeModal()" class="w-full py-3 bg-brand-gold text-brand-dark rounded-xl font-bold hover:scale-[1.02] active:scale-[0.98] transition-all">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const DEMO_BUYERS = [
-            { 
-                cedula: "1712345678", 
-                name: "Juan Pérez",
-                purchases: [
-                    { date: "15 Mayo, 2026", tickets: ["#142", "#143", "#144"], status: "confirmed" },
-                    { date: "10 Mayo, 2026", tickets: ["#089", "#090"], status: "pending" }
-                ]
-            },
-            { 
-                cedula: "0912345678", 
-                name: "María García",
-                purchases: [
-                    { date: "18 Mayo, 2026", tickets: ["#201"], status: "confirmed" }
-                ]
-            }
-        ];
+        function openModal(txId, tickets) {
+            const modal = document.getElementById('tickets-modal');
+            const content = document.getElementById('modal-content');
+            document.getElementById('modal-tx-id').textContent = 'Transacción: ' + txId;
+            document.getElementById('modal-tickets').innerHTML = tickets.map(t => `
+                <div class="aspect-square bg-brand-gold/10 border border-brand-gold/30 rounded-lg flex items-center justify-center">
+                    <span class="text-brand-gold font-bold text-sm">${t}</span>
+                </div>
+            `).join('');
+            modal.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            });
+        }
 
-        document.getElementById('search-btn').onclick = () => {
-            const input = document.getElementById('cedula-input').value;
-            const buyer = DEMO_BUYERS.find(b => b.cedula === input);
+        function closeModal() {
+            const modal = document.getElementById('tickets-modal');
+            const content = document.getElementById('modal-content');
+            content.classList.add('scale-95', 'opacity-0');
+            content.classList.remove('scale-100', 'opacity-100');
+            setTimeout(() => modal.classList.add('hidden'), 200);
+        }
 
+        document.getElementById('search-btn').onclick = async () => {
+            const input = document.getElementById('cedula-input').value.trim();
             const results = document.getElementById('results-section');
             const notFound = document.getElementById('not-found-section');
 
-            if (buyer) {
-                notFound.classList.add('hidden');
-                results.classList.remove('hidden');
+            if (!input) return;
 
-                document.getElementById('res-name').textContent = buyer.name;
-                document.getElementById('res-cedula').textContent = `Cédula: ${buyer.cedula}`;
+            try {
+                const res = await fetch('<?= base_url('buscar-boletos') ?>', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    body: JSON.stringify({ cedula: input })
+                });
+                const data = await res.json();
 
-                const tbody = document.getElementById('res-table-body');
-                tbody.innerHTML = buyer.purchases.map(p => `
-                    <tr>
-                        <td class="px-6 py-4 text-sm font-medium">${p.date}</td>
-                        <td class="px-6 py-4">
-                            <div class="flex flex-wrap gap-2">
-                                ${p.tickets.map(t => `<span class="px-2 py-0.5 border border-brand-gold/30 text-brand-gold rounded text-xs font-bold">${t}</span>`).join('')}
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${p.status === 'confirmed' ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'}">
-                                ${p.status === 'confirmed' ? 'Confirmado' : 'Pendiente'}
-                            </span>
-                        </td>
-                    </tr>
-                `).join('');
-            } else {
+                if (data.success && data.transactions && data.transactions.length > 0) {
+                    notFound.classList.add('hidden');
+                    results.classList.remove('hidden');
+
+                    document.getElementById('res-name').textContent = data.participant.nombre;
+                    document.getElementById('res-cedula').textContent = `Cédula: ${data.participant.cedula}`;
+
+                    const tbody = document.getElementById('res-table-body');
+                    tbody.innerHTML = data.transactions.map(tx => `
+                        <tr>
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-medium">${tx.fecha}</div>
+                                <div class="text-xs text-brand-muted">ID: ${tx.transaccion_id}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex flex-wrap gap-1">
+                                    ${tx.tickets.slice(0, 3).map(t => `<span class="px-2 py-0.5 bg-brand-gold/10 border border-brand-gold/30 text-brand-gold rounded text-xs font-bold">${t}</span>`).join('')}
+                                    ${tx.tickets.length > 3 ? `<button onclick='openModal("${tx.transaccion_id}", ${JSON.stringify(tx.tickets).replace(/"/g, '&quot;')})' class='px-2 py-0.5 bg-white/5 border border-white/10 text-brand-muted rounded text-xs font-bold hover:text-white hover:border-white/20 transition-colors'>+${tx.tickets.length - 3} más</button>` : ''}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-xs text-brand-muted mb-1">${tx.metodo_pago} · $${tx.total}</div>
+                                <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-green-500/10 text-green-500 border border-green-500/20">
+                                    Confirmado
+                                </span>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    results.classList.add('hidden');
+                    notFound.classList.remove('hidden');
+                }
+            } catch (e) {
                 results.classList.add('hidden');
                 notFound.classList.remove('hidden');
             }

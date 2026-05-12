@@ -7,6 +7,7 @@ use App\Models\BancosModel;
 use App\Models\ParticipantModel;
 use App\Models\SettingsModel;
 use App\Models\TicketModel;
+use App\Models\TransactionModel;
 
 class HomeController extends BaseController
 {
@@ -108,9 +109,22 @@ class HomeController extends BaseController
             }
 
             $participantModel = new ParticipantModel();
+            $transactionModel = new TransactionModel();
             $participant = $participantModel->findByCedula($cedula);
 
             if ($participant) {
+                $pendingTx = $transactionModel->hasPendingTransactionByParticipant($participant['id']);
+                if ($pendingTx) {
+                    return $this->response->setJSON([
+                        'error' => true,
+                        'message' => 'Ya tienes una transacción pendiente.',
+                        'transaccion_id' => $pendingTx['transaccion_id'],
+                        'status' => $pendingTx['status'],
+                        'exists' => true,
+                        'locked' => true,
+                        'csrfHash' => csrf_hash()
+                    ]);
+                }
                 return $this->response->setJSON([
                     'nombre'    => $participant['nombres'],
                     'apellidos' => $participant['apellidos'],
@@ -193,6 +207,85 @@ class HomeController extends BaseController
     public function misBoletos()
     {
         return view('home/mis-boletos');
+    }
+
+    public function buscarBoletos()
+    {
+        try {
+            $throttler = service('throttler');
+            $ip = $this->request->getIPAddress();
+
+            $data = $this->request->getJSON(true);
+            $cedula = $data['cedula'] ?? null;
+
+            if (!$cedula) {
+                return $this->response->setJSON([
+                    'error' => true,
+                    'message' => 'Cédula requerida'
+                ]);
+            }
+
+            $key = $ip . '_buscar_boletos_' . $cedula;
+            if (!$throttler->check($key, 10, MINUTE)) {
+                return $this->response
+                    ->setStatusCode(429)
+                    ->setJSON([
+                        'error' => true,
+                        'message' => 'Demasiadas consultas, intenta más tarde'
+                    ]);
+            }
+
+            $participantModel = new ParticipantModel();
+            $participant = $participantModel->findByCedula($cedula);
+
+            if (!$participant) {
+                return $this->response->setJSON([
+                    'error' => true,
+                    'message' => 'No se encontraron boletos para esta cédula'
+                ]);
+            }
+
+            $transactionModel = new \App\Models\TransactionModel();
+            $ticketModel = new TicketModel();
+
+            $transactions = $transactionModel
+                ->where('participant_id', $participant['id'])
+                ->whereIn('status', ['completado', 'completada'])
+                ->orderBy('created_at', 'DESC')
+                ->findAll();
+
+            $result = [];
+            foreach ($transactions as $tx) {
+                $tickets = $ticketModel->findByTransaccionId($tx['transaccion_id']);
+                $numeros = array_map(fn($t) => '#' . str_pad($t['numero'], 5, '0', STR_PAD_LEFT), $tickets);
+                $result[] = [
+                    'transaccion_id' => $tx['transaccion_id'],
+                    'fecha' => date('d M Y', strtotime($tx['created_at'])),
+                    'metodo_pago' => $tx['metodo_pago'],
+                    'cantidad' => count($numeros),
+                    'total' => number_format((float)$tx['total'], 2),
+                    'tickets' => $numeros
+                ];
+            }
+
+            return $this->response->setJSON([
+                'success' => true,
+                'participant' => [
+                    'nombre' => $participant['nombres'] . ' ' . $participant['apellidos'],
+                    'cedula' => $participant['cedula']
+                ],
+                'transactions' => $result
+            ]);
+
+        } catch (\Exception $e) {
+            log_message('error', 'Error buscarBoletos: ' . $e->getMessage());
+            return $this->response
+                ->setStatusCode(500)
+                ->setJSON([
+                    'error' => true,
+                    'message' => 'Error interno'
+                ]);
+        }
     }
 
     private function splitNameApi(string $fullName): array

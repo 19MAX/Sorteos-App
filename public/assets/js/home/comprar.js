@@ -363,6 +363,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // If API returned an error (participant not found anywhere), allow manual entry
       if (data.error) {
+        if (data.transaccion_id) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Transacción Pendiente',
+            html: `Ya tienes una transacción <strong>#${data.transaccion_id}</strong> con estado <strong>${data.status}</strong>.<br>Completa o cancela esa transacción antes de hacer una nueva compra.`,
+            confirmButtonText: 'Entendido',
+            background: '#1a1a2e',
+            color: '#fff',
+            confirmButtonColor: '#d4af37',
+          });
+          return;
+        }
         inputNombre.readOnly = false;
         inputNombre.classList.remove('bg-gray-900', 'cursor-not-allowed');
         inputNombre.classList.add('focus:border-brand-gold');
