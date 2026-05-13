@@ -34,6 +34,22 @@ $routes->group('admin', ['filter' => 'adminauth'], function ($routes) {
     $routes->post('transactions/expire-expired', 'Admin\TransactionController::expireExpired', ['as' => 'admin.transactions.expireExpired']);
     $routes->post('transactions/delete-old', 'Admin\TransactionController::deleteOld', ['as' => 'admin.transactions.deleteOld']);
 
+    // Participants
+    $routes->get('participants', 'Admin\ParticipantController::index', ['as' => 'admin.participants.index']);
+    $routes->get('participants/data', 'Admin\ParticipantController::data', ['as' => 'admin.participants.data']);
+    $routes->get('participants/buscar', 'Admin\ParticipantController::buscar', ['as' => 'admin.participants.buscar']);
+    $routes->get('participants/create', 'Admin\ParticipantController::create', ['as' => 'admin.participants.create']);
+    $routes->post('participants/store', 'Admin\ParticipantController::store', ['as' => 'admin.participants.store']);
+    $routes->get('participants/edit/(:num)', 'Admin\ParticipantController::edit/$1', ['as' => 'admin.participants.edit']);
+    $routes->post('participants/update/(:num)', 'Admin\ParticipantController::update/$1', ['as' => 'admin.participants.update']);
+    $routes->post('participants/delete/(:num)', 'Admin\ParticipantController::delete/$1', ['as' => 'admin.participants.delete']);
+
+    // Physical Sales
+    $routes->get('physical-sales', 'Admin\PhysicalSaleController::index', ['as' => 'admin.physicalSales.index']);
+    $routes->post('physical-sales/buscar-cedula', 'Admin\PhysicalSaleController::buscarCedula', ['as' => 'admin.physicalSales.buscarCedula']);
+    $routes->post('physical-sales/guardar-participante', 'Admin\PhysicalSaleController::guardarParticipante', ['as' => 'admin.physicalSales.guardarParticipante']);
+    $routes->post('physical-sales/vender-boletos', 'Admin\PhysicalSaleController::venderBoletos', ['as' => 'admin.physicalSales.venderBoletos']);
+
     $routes->group('settings', function ($routes) {
         $routes->get('config', 'Settings\ConfigController::index', ['as' => 'settings.config']);
         $routes->post('bank/create', 'Settings\BankController::create', ['as' => 'settings.bank.create']);

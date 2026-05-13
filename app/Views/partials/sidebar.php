@@ -12,6 +12,8 @@
         <li><a class="nav-link <?= (current_url() == site_url('admin/tickets/generate')) ? 'active' : '' ?>" href="<?= route_to('admin.tickets.generate') ?>"><i class="ti ti-box-seam"></i><span class="nav-text">Generar Boletos</span></a></li>
         <li><a class="nav-link <?= (current_url() == site_url('admin/transactions')) ? 'active' : '' ?>" href="<?= route_to('admin.transactions.index') ?>"><i class="ti ti-receipt"></i><span class="nav-text">Transacciones</span></a></li>
         <li><a class="nav-link <?= (current_url() == site_url('admin/payphone-transactions')) ? 'active' : '' ?>" href="<?= route_to('admin.payphoneTransactions.index') ?>"><i class="ti ti-device-mobile"></i><span class="nav-text">Transacciones Payphone</span></a></li>
+        <li><a class="nav-link <?= (current_url() == site_url('admin/physical-sales')) ? 'active' : '' ?>" href="<?= route_to('admin.physicalSales.index') ?>"><i class="ti ti-cash"></i><span class="nav-text">Venta Física</span></a></li>
+        <li><a class="nav-link <?= (current_url() == site_url('admin/participants')) ? 'active' : '' ?>" href="<?= route_to('admin.participants.index') ?>"><i class="ti ti-users"></i><span class="nav-text">Participantes</span></a></li>
 
         <li class="px-4 pt-4 pb-2"><small class="nav-text">Account</small></li>
         <li><a class="nav-link" href="<?= site_url('logout') ?>"><i class="ti ti-logout"></i><span class="nav-text">Cerrar Sesión</span></a></li>
