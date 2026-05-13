@@ -11,7 +11,7 @@ class UsersSeeder extends Seeder
         $adminPassword = password_hash(env('SEEDER_ADMIN_PASSWORD'), PASSWORD_DEFAULT);
 
         $adminData = [
-            'username' => 'admin',
+            'username' => env('SEEDER_ADMIN_USERNAME'),
             'password' => $adminPassword,
             'nombre' => env('SEEDER_ADMIN_NAME'),
             'email' => env('SEEDER_ADMIN_EMAIL'),
@@ -21,7 +21,7 @@ class UsersSeeder extends Seeder
         ];
 
         $builder = $this->db->table('admins');
-            $builder->insert($adminData);
-        
+        $builder->insert($adminData);
+
     }
 }
