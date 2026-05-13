@@ -60,8 +60,9 @@
                 </div>
 
                 <div class="relative max-w-md mx-auto">
-                    <input type="text" id="cedula-input" placeholder="Ej: 1712345678" 
-                           class="w-full bg-brand-card border border-gray-800 rounded-2xl px-6 py-5 focus:border-brand-gold outline-none text-xl font-heading tracking-widest transition-all">
+                    <input type="text" id="cedula-input" placeholder="Ej: 1712345678" maxlength="10"
+                           class="w-full bg-brand-card border border-gray-800 rounded-2xl px-6 py-5 focus:border-brand-gold outline-none text-xl font-heading tracking-widest transition-all"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                     <button id="search-btn" class="absolute right-2 top-2 bottom-2 bg-brand-gold text-brand-dark px-6 rounded-xl font-bold hover:scale-105 active:scale-95 transition-all">
                         BUSCAR
                     </button>
@@ -132,7 +133,7 @@
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
-                <div class="p-6">
+                <div class="p-6 max-h-[60vh] overflow-y-auto">
                     <div id="modal-tickets" class="grid grid-cols-5 gap-2"></div>
                 </div>
                 <div class="p-4 border-t border-white/5">

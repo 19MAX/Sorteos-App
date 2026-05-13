@@ -225,8 +225,15 @@ class HomeController extends BaseController
                 ]);
             }
 
-            $key = $ip . '_buscar_boletos_' . $cedula;
-            if (!$throttler->check($key, 10, MINUTE)) {
+            if (!preg_match('/^[0-9]{10}$/', $cedula)) {
+                return $this->response->setJSON([
+                    'error' => true,
+                    'message' => 'Cédula inválida'
+                ]);
+            }
+
+            $key = $ip . '_buscar_boletos';
+            if (!$throttler->check($key, 3, MINUTE)) {
                 return $this->response
                     ->setStatusCode(429)
                     ->setJSON([
