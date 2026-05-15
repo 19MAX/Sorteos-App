@@ -178,7 +178,7 @@
                     <div class="space-y-2">
                         <label class="text-xs font-bold text-brand-muted uppercase">Cédula</label>
                         <input type="text" name="cedula" maxlength="10" inputmode="numeric" pattern="[0-9]*"
-                            maxlength="10" required
+                            maxlength="10" required 
                             class="w-full bg-brand-card border border-gray-800 rounded-xl px-4 py-3 focus:border-brand-gold outline-none">
                         <p class="input-message hidden" data-error="cedula"></p>
                     </div>

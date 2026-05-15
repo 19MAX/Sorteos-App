@@ -369,9 +369,9 @@ document.addEventListener("DOMContentLoaded", () => {
             title: 'Transacción Pendiente',
             html: `Ya tienes una transacción <strong>#${data.transaccion_id}</strong> con estado <strong>${data.status}</strong>.<br>Completa o cancela esa transacción antes de hacer una nueva compra.`,
             confirmButtonText: 'Entendido',
-            background: '#1a1a2e',
+            background: '#111827',
             color: '#fff',
-            confirmButtonColor: '#d4af37',
+            confirmButtonColor: '#f5c518',
           });
           return;
         }

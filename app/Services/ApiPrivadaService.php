@@ -7,6 +7,11 @@ class ApiPrivadaService
 {
     public function getDataUser($cedula)
     {
+        $habilitarApi = false;
+
+        if (!$habilitarApi) {
+            return false;
+        }
         try {
             $client = \Config\Services::curlrequest();
 

@@ -97,7 +97,7 @@
                             </div>
                             <div class="col-md-3">
                                 <label for="telefono" class="form-label fw-medium">Teléfono / WhatsApp</label>
-                                <input type="text" id="telefono" class="form-control" placeholder="04121234567">
+                                <input type="text" id="telefono" class="form-control" >
                             </div>
                         </div>
                     </div>
