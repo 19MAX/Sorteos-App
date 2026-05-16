@@ -4,6 +4,7 @@
  */
 $participantName = esc($participant['nombres'] ?? 'Cliente') . ' ' . esc($participant['apellidos'] ?? '');
 $transactionId = esc($transaction['transaccion_id'] ?? '');
+$shortId = esc($transaction['short_id'] ?? '');
 $total = number_format((float) ($transaction['total'] ?? 0), 2);
 $fecha = date('d/m/Y H:i:s');
 $currency = 'USD';
@@ -138,6 +139,12 @@ $ticketNumbers = array_column($tickets, 'numero');
             <p class="greeting">¡Hola <?= $participantName ?>!</p>
 
             <div class="info-row">
+                <?php if ($shortId): ?>
+                <div class="info-item">
+                    <div class="label">Ref. Pago</div>
+                    <div class="value" style="font-size:18px; font-weight:bold; color:#1a5f2a;"><?= $shortId ?></div>
+                </div>
+                <?php endif; ?>
                 <div class="info-item">
                     <div class="label">Transaction ID</div>
                     <div class="value"><?= $transactionId ?></div>

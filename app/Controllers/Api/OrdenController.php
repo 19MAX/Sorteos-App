@@ -177,11 +177,15 @@ class OrdenController extends BaseController
                 'expired_at'       => $expiredAt,
             ]);
 
+            $txId = $this->transactionModel->getInsertID();
+            $transaction = $this->transactionModel->find($txId);
+
             return $this->response->setJSON([
                 'success' => true,
                 'message' => 'Reservación creada exitosamente',
                 'data' => [
                     'numero_transaccion' => $transaccionId,
+                    'short_id' => $transaction['short_id'] ?? '',
                     'boletos' => $qty,
                     'expira_en' => self::RESERVATION_HOURS . ' hora',
                 ],

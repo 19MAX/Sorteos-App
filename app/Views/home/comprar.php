@@ -430,6 +430,10 @@
 
                 <div id="txn-info"
                     class="hidden bg-brand-card border border-white/10 rounded-2xl p-6 space-y-4 text-left max-w-sm mx-auto">
+                    <div class="text-center border-b border-white/10 pb-4">
+                        <span class="text-xs font-bold text-brand-muted uppercase">Tu reference de pago</span>
+                        <div id="txn-short-id" class="font-mono text-2xl font-bold text-brand-gold mt-1"></div>
+                    </div>
                     <div class="flex justify-between items-center">
                         <span class="text-xs font-bold text-brand-muted uppercase">N° Transacción</span>
                         <span id="txn-numero" class="font-mono text-brand-gold text-sm font-bold"></span>

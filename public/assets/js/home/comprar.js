@@ -67,12 +67,15 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("step4-success").classList.remove("hidden");
   }
 
-  function showTxnInfo(data) {
+function showTxnInfo(data) {
     document.getElementById("txn-numero").textContent = data.numero_transaccion;
     document.getElementById("txn-boletos").textContent = data.boletos;
     document.getElementById("txn-expira").textContent = data.expira_en;
+    if (data.short_id) {
+        document.getElementById("txn-short-id").textContent = data.short_id;
+    }
     document.getElementById("txn-info").classList.remove("hidden");
-  }
+}
 
   function resetFormToStep1() {
     clearOrder();

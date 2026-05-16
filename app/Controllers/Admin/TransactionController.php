@@ -32,7 +32,7 @@ class TransactionController extends BaseController
         $status = $this->request->getGet('status') ?? '';
 
         $builder = $db->table('transactions t')
-            ->select('t.id, t.transaccion_id, t.cantidad_boletos, t.total, t.metodo_pago, t.status, t.created_at, t.completed_at, t.expired_at,
+            ->select('t.id, t.short_id, t.transaccion_id, t.cantidad_boletos, t.total, t.metodo_pago, t.status, t.created_at, t.completed_at, t.expired_at,
                       p.nombres, p.apellidos, p.cedula, p.email')
             ->join('participants p', 'p.id = t.participant_id', 'left');
 

@@ -4,7 +4,7 @@
 <div class="row ">
     <div class="col-12">
         <div class="mb-6">
-            <h1 class="fs-3 mb-1">Dashboard</h1>
+            <h1 class="fs-3 mb-1">Inicio</h1>
             <p>Resumen del sistema de sorteos</p>
         </div>
     </div>

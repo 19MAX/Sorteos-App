@@ -46,6 +46,7 @@
             <table id="transactionsTable" class="table text-nowrap table-hover table-sm">
                 <thead class="table-light border-light">
                     <tr>
+                        <th>Short ID</th>
                         <th>ID Transacción</th>
                         <th>Cliente</th>
                         <th>Cédula</th>
@@ -61,6 +62,7 @@
                 <tbody>
                     <?php foreach ($transactions as $tx): ?>
                         <tr class="align-middle">
+                            <td><span class="fw-bold text-brand-gold"><?= esc($tx['short_id'] ?? '') ?></span></td>
                             <td><span class="fw-bold"><?= esc($tx['transaccion_id']) ?></span></td>
                             <td><?= esc(($tx['nombres'] ?? '') . ' ' . ($tx['apellidos'] ?? '')) ?></td>
                             <td><?= esc($tx['cedula'] ?? '') ?></td>

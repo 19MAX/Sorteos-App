@@ -13,7 +13,7 @@ class TransactionModel extends Model
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = [
-        'transaccion_id', 'participant_id', 'cantidad_boletos', 'total',
+        'transaccion_id', 'short_id', 'participant_id', 'cantidad_boletos', 'total',
         'metodo_pago', 'status', 'comprobante', 'boletos_asignados', 'admin_id',
         'completed_at', 'failed_at', 'expired_at'
     ];
@@ -42,7 +42,7 @@ class TransactionModel extends Model
     protected $cleanValidationRules = true;
 
     protected $allowCallbacks = true;
-    protected $beforeInsert   = ['generateTransactionId'];
+    protected $beforeInsert   = ['generateTransactionId', 'generateShortId'];
     protected $afterInsert    = [];
     protected $beforeUpdate   = [];
     protected $afterUpdate    = [];
@@ -57,6 +57,24 @@ class TransactionModel extends Model
             $data['data']['transaccion_id'] = 'TXN-' . strtoupper(bin2hex(random_bytes(8)));
         }
         return $data;
+    }
+
+    protected function generateShortId(array $data): array
+    {
+        if (empty($data['data']['short_id'])) {
+            $data['data']['short_id'] = $this->getNextShortId();
+        }
+        return $data;
+    }
+
+    private function getNextShortId(): string
+    {
+        $lastId = $this->orderBy('id', 'DESC')->limit(1)->get()->getRow();
+        $nextNum = 1;
+        if ($lastId && isset($lastId->short_id)) {
+            $nextNum = (int)$lastId->short_id + 1;
+        }
+        return str_pad((string)$nextNum, 6, '0', STR_PAD_LEFT);
     }
 
     public function findByTransaccionId(string $transaccionId): ?array

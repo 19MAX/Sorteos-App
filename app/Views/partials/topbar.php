@@ -105,11 +105,8 @@
                             </div>
                         </div>
                         <div class="p-3 d-flex flex-column gap-1 small lh-lg">
-                            <a href="<?= site_url('/admin') ?>">
-                                <span>Dashboard</span>
-                            </a>
                             <a href="<?= site_url('/logout') ?>">
-                                <span>Logout</span>
+                                <span>Cerrar Sesión</span>
                             </a>
                         </div>
 
