@@ -361,4 +361,31 @@ class TransactionController extends BaseController
             ]);
         }
     }
+
+    public function liberarBoletos()
+    {
+        try {
+            if (!$this->request->isAJAX()) {
+                return $this->response->setStatusCode(403)
+                    ->setJSON(['status' => 'error', 'message' => 'Acceso denegado']);
+            }
+
+            $queue = service('queue');
+            $queue->push('default', 'liberar_boletos', []);
+
+            log_message('info', 'TransactionController::liberarBoletos - Job encolado');
+
+            return $this->response->setJSON([
+                'status' => 'success',
+                'message' => 'Job de liberación de boletos encolado correctamente'
+            ]);
+
+        } catch (\Exception $e) {
+            log_message('error', 'TransactionController::liberarBoletos - Excepción: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Error interno del servidor: ' . $e->getMessage()
+            ]);
+        }
+    }
 }

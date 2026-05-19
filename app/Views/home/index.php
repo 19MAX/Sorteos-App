@@ -242,7 +242,7 @@
             </div>
             <p class="text-brand-muted text-xs flex items-center gap-2">
               <span class="inline-block w-2 h-2 rounded-full bg-brand-gold animate-pulse"></span>
-              El sorteo se realiza automáticamente al llegar al 100%
+              El sorteo se realiza al llegar al 100%
             </p>
           </div>
 

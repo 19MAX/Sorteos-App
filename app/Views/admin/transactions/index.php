@@ -36,6 +36,9 @@
             <button id="btn-delete-old" class="btn btn-danger">
                 <i class="ti ti-trash"></i> Eliminar rechazadas/expiradas
             </button>
+            <button id="btn-liberar-boletos" class="btn btn-primary">
+                <i class="ti ti-lock-open"></i> Liberar boletos
+            </button>
         </div>
     </div>
 </div>
@@ -47,7 +50,7 @@
                 <thead class="table-light border-light">
                     <tr>
                         <th>Short ID</th>
-                        <th>ID Transacción</th>
+                        <th class="exclude">ID Transacción</th>
                         <th>Cliente</th>
                         <th>Cédula</th>
                         <th>Email</th>
@@ -56,7 +59,7 @@
                         <th>Método</th>
                         <th>Estado</th>
                         <th>Fecha</th>
-                        <th>Acciones</th>
+                        <th class="no-export">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -151,14 +154,42 @@
         new DataTable('#transactionsTable', {
             language: { url: 'https://cdn.datatables.net/plug-ins/2.3.7/i18n/es-ES.json' },
             scrollX: true,
+            columnDefs: [
+                {
+                    targets: 'exclude',   // apunta a th con clase "exclude"
+                    visible: false        // oculta la columna al cargar
+                }
+            ],
             layout: {
                 topStart: {
                     buttons: [
                         'pageLength',
                         {
                             extend: 'colvis',
-                            text: '<i class="ti ti-columns"></i>',
-                            className: 'btn btn-secondary'
+                            text: '<i class="ti ti-columns"></i> Columnas',
+                            className: 'btn btn-secondary',
+                            columns: ':not(.noVis)'   // permite mostrar/ocultar todas las columnas
+                        },
+                        {
+                            extend: 'excelHtml5',
+                            text: '<i class="ti ti-file-spreadsheet"></i> Excel',
+                            className: 'btn btn-success',
+                            title: 'Transacciones',
+                            exportOptions: {
+                                columns: ':visible:not(.no-export)'
+
+                            }
+                        },
+                        {
+                            extend: 'pdfHtml5',
+                            text: '<i class="ti ti-file-type-pdf"></i> PDF',
+                            className: 'btn btn-danger',
+                            title: 'Transacciones',
+                            orientation: 'landscape',
+                            pageSize: 'A4',
+                            exportOptions: {
+                                columns: ':visible:not(.no-export)'
+                            }
                         }
                     ]
                 }
@@ -324,6 +355,53 @@
                 if (result.isConfirmed) {
                     $.ajax({
                         url: '<?= url_to('admin.transactions.deleteOld') ?>',
+                        type: 'POST',
+                        success: (res) => {
+                            if (res.status === 'success') {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Éxito',
+                                    text: res.message,
+                                    confirmButtonColor: '#198754'
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: res.message,
+                                    confirmButtonColor: '#dc3545'
+                                });
+                            }
+                        },
+                        error: () => {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Error de conexión',
+                                confirmButtonColor: '#dc3545'
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        $(document).on('click', '#btn-liberar-boletos', function () {
+            Swal.fire({
+                title: '¿Liberar boletos expirados?',
+                text: 'Esta acción liberará los boletos asociados a transacciones con método tarjeta y status procesando_pago que hayan expirado.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#0d6efd',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, liberar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '<?= url_to('admin.transactions.liberarBoletos') ?>',
                         type: 'POST',
                         success: (res) => {
                             if (res.status === 'success') {

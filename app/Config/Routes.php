@@ -33,6 +33,7 @@ $routes->group('admin', ['filter' => 'adminauth'], function ($routes) {
     $routes->post('transactions/reject', 'Admin\TransactionController::reject', ['as' => 'admin.transactions.reject']);
     $routes->post('transactions/expire-expired', 'Admin\TransactionController::expireExpired', ['as' => 'admin.transactions.expireExpired']);
     $routes->post('transactions/delete-old', 'Admin\TransactionController::deleteOld', ['as' => 'admin.transactions.deleteOld']);
+    $routes->post('transactions/liberar-boletos', 'Admin\TransactionController::liberarBoletos', ['as' => 'admin.transactions.liberarBoletos']);
 
     // Participants
     $routes->get('participants', 'Admin\ParticipantController::index', ['as' => 'admin.participants.index']);

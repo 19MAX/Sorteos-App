@@ -28,10 +28,10 @@
                             <option value="disponible">Disponible</option>
                             <option value="reservado">Reservado</option>
                             <option value="procesando">Procesando</option>
-                            <option value="vendido">Vendido</option>
+                            <!-- <option value="vendido">Vendido</option> -->
                             <option value="pagado">Pagado</option>
-                            <option value="asignado">Asignado</option>
-                            <option value="expirado">Expirado</option>
+                            <!-- <option value="asignado">Asignado</option> -->
+                            <!-- <option value="expirado">Expirado</option> -->
                         </select>
                     </div>
                     <div class="col-md-2">
