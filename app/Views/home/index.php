@@ -329,6 +329,24 @@
         </div>
       </section>
 
+    <section id="terminos" class="mt-40 space-y-16">
+        <div class="text-center space-y-4">
+          <h2 class="font-heading font-bold text-3xl md:text-5xl">Términos y Condiciones</h2>
+        </div>
+
+        <div class="bg-brand-card/30 border border-white/5 rounded-[2rem] p-8 md:p-12 space-y-6 text-sm text-brand-muted max-w-5xl mx-auto">
+          <p><strong class="text-white">1. Duración:</strong> El sorteo se realizará una vez se haya completado la venta total de números.</p>
+          <p><strong class="text-white">2. Elegibilidad:</strong> El sorteo está abierto a cualquier persona sin restricción de edad.</p>
+          <p><strong class="text-white">3. Premio:</strong> El premio será entregado a nombre del ganador o su representante mayor de edad con todos los procesos de ley.</p>
+          <p><strong class="text-white">4. Notificación al Ganador:</strong> Nos pondremos en contacto con el ganador a través de los datos proporcionados al participar en el sorteo. Los resultados serán publicados en las redes y medios participantes.</p>
+          <p><strong class="text-white">5. Propiedad Intelectual:</strong> Todo el contenido proporcionado a través de este servicio está protegido por derechos de autor y otros derechos de propiedad intelectual.</p>
+          <p><strong class="text-white">6. Condiciones Generales:</strong> Deben venderse todos los números participantes para poder realizar el sorteo.</p>
+          <p><strong class="text-white">7. Asignación de números:</strong> Los números serán asignados por el sistema de manera única y aleatoria para cada participante.</p>
+          <p><strong class="text-white">8. Aceptación de Términos:</strong> La participación en el sorteo implica la aceptación de estos términos y condiciones.</p>
+          <p><strong class="text-white">9. Pagos con transferencia:</strong> El participante dispone de dos horas para realizar el pago y subir el comprobante a la plataforma después de realizado el pedido. En caso de estar en el último 1% de la actividad el tiempo máximo de subida del comprobante será de solo 5 minutos. De no hacerlo dentro del tiempo establecido su pedido no será procesado y no se permitirá bajo ningún término un reembolso.</p>
+        </div>
+      </section>
+
     </div>
   </main>
 
@@ -355,7 +373,7 @@
       <div class="space-y-6">
         <h4 class="font-heading font-bold uppercase tracking-widest text-sm text-white">Legal</h4>
         <ul class="space-y-3 text-brand-muted text-sm">
-          <li><a href="#" class="hover:text-brand-gold transition-colors">Términos y Condiciones</a></li>
+          <li><a href="<?= base_url('#terminos') ?>" class="hover:text-brand-gold transition-colors">Términos y Condiciones</a></li>
           <li><a href="#" class="hover:text-brand-gold transition-colors">Política de Privacidad</a></li>
         </ul>
       </div>

@@ -380,8 +380,29 @@
 
             <div class="flex items-center gap-3 px-4">
                 <input type="checkbox" id="terms" class="w-5 h-5 accent-brand-gold">
-                <label for="terms" class="text-sm text-brand-muted">Acepto los términos y condiciones del
-                    sorteo.</label>
+                <label for="terms" class="text-sm text-brand-muted">Acepto los <button type="button" onclick="showTermsModal()" class="text-brand-gold hover:underline">términos y condiciones</button> del sorteo.</label>
+            </div>
+
+            <!-- Términos y Condiciones -->
+            <div id="terms-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
+                <div class="bg-brand-card border border-white/10 rounded-2xl p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-heading font-bold text-xl text-brand-gold">Términos y Condiciones</h3>
+                        <button onclick="hideTermsModal()" class="text-white/50 hover:text-white text-2xl">&times;</button>
+                    </div>
+                    <div class="space-y-4 text-sm text-brand-muted">
+                        <p><strong class="text-white">1. Duración:</strong> El sorteo se realizará una vez se haya completado la venta total de números.</p>
+                        <p><strong class="text-white">2. Elegibilidad:</strong> El sorteo está abierto a cualquier persona sin restricción de edad.</p>
+                        <p><strong class="text-white">3. Premio:</strong> El premio será entregado a nombre del ganador o su representante mayor de edad con todos los procesos de ley.</p>
+                        <p><strong class="text-white">4. Notificación al Ganador:</strong> Nos pondremos en contacto con el ganador a través de los datos proporcionados al participar en el sorteo. Los resultados serán publicados en las redes y medios participantes.</p>
+                        <p><strong class="text-white">5. Propiedad Intelectual:</strong> Todo el contenido proporcionado a través de este servicio está protegido por derechos de autor y otros derechos de propiedad intelectual.</p>
+                        <p><strong class="text-white">6. Condiciones Generales:</strong> Deben venderse todos los números participantes para poder realizar el sorteo.</p>
+                        <p><strong class="text-white">7. Asignación de números:</strong> Los números serán asignados por el sistema de manera única y aleatoria para cada participante.</p>
+                        <p><strong class="text-white">8. Aceptación de Términos:</strong> La participación en el sorteo implica la aceptación de estos términos y condiciones.</p>
+                        <p><strong class="text-white">9. Pagos con transferencia:</strong> El participante dispone de dos horas para realizar el pago y subir el comprobante a la plataforma después de realizado el pedido. En caso de estar en el último 1% de la actividad el tiempo máximo de subida del comprobante será de solo 5 minutos. De no hacerlo dentro del tiempo establecido su pedido no será procesado y no se permitirá bajo ningún término un reembolso.</p>
+                    </div>
+                    <button onclick="hideTermsModal()" class="mt-6 w-full py-3 bg-brand-gold text-brand-dark font-bold rounded-xl">Entendido</button>
+                </div>
             </div>
 
             <div class="flex justify-between gap-4">
@@ -431,7 +452,7 @@
                 <div id="txn-info"
                     class="hidden bg-brand-card border border-white/10 rounded-2xl p-6 space-y-4 text-left max-w-sm mx-auto">
                     <div class="text-center border-b border-white/10 pb-4">
-                        <span class="text-xs font-bold text-brand-muted uppercase">Tu reference de pago</span>
+                        <span class="text-xs font-bold text-brand-muted uppercase">Tu referencia de pago</span>
                         <div id="txn-short-id" class="font-mono text-2xl font-bold text-brand-gold mt-1"></div>
                     </div>
                     <div class="flex justify-between items-center">
@@ -469,6 +490,20 @@
             name: '<?= csrf_token() ?>',
             hash: '<?= csrf_hash() ?>',
         };
+
+        function showTermsModal() {
+            document.getElementById('terms-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideTermsModal() {
+            document.getElementById('terms-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('terms-modal').addEventListener('click', function(e) {
+            if (e.target === this) hideTermsModal();
+        });
     </script>
     <script src="<?= base_url('assets/js/home/comprar.js') ?>"></script>
 <a href="https://wa.me/593997253099" target="_blank" rel="noopener"
