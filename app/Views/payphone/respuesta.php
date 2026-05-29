@@ -16,6 +16,7 @@
                             card:   '#111827',
                             accent: '#3b82f6',
                             muted:  '#94a3b8',
+                            custom: '#05a2e6',
                         }
                     },
                     fontFamily: {
