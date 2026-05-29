@@ -14,7 +14,7 @@
                 extend: {
                     colors: {
                         brand: {
-                            gold: '#f5c518',
+                            gold: '#92960f',
                             dark: '#0a0f1e',
                             card: '#111827',
                             accent: '#3b82f6',
@@ -35,7 +35,7 @@
         rel="stylesheet">
     <style>
         :root {
-            --gold: #f5c518;
+            --gold: #92960f;
             --dark: #0a0f1e;
             --card: #111827;
         }
@@ -219,7 +219,7 @@
                 </div>
 
                 <button type="submit"
-                    class="w-full py-4 bg-gradient-to-r from-brand-gold to-orange-500 text-brand-dark font-heading font-bold text-lg rounded-xl hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-widest">
+                    class="w-full py-4 bg-gradient-to-r from-brand-gold to-brand-custom text-brand-dark font-heading font-bold text-lg rounded-xl hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-widest">
                     Continuar al Pago
                 </button>
             </form>
@@ -411,7 +411,7 @@
                 </button>
 
                 <button id="btn-finalizar"
-                    class="w-1/2 py-5 bg-gradient-to-r from-brand-gold to-orange-500 text-brand-dark rounded-xl">
+                    class="w-1/2 py-5 bg-gradient-to-r from-brand-gold to-brand-custom text-brand-dark rounded-xl">
                     Confirmar →
                 </button>
             </div>
@@ -476,7 +476,7 @@
                         Ver mis boletos
                     </a>
                     <button id="btn-volver-comprar" type="button"
-                        class="flex-1 py-4 px-8 bg-gradient-to-r from-brand-gold to-orange-500 text-brand-dark font-bold rounded-xl hover:scale-[1.02] transition-all">
+                        class="flex-1 py-4 px-8 bg-gradient-to-r from-brand-gold to-brand-custom text-brand-dark font-bold rounded-xl hover:scale-[1.02] transition-all">
                         Volver a comprar
                     </button>
                 </div>

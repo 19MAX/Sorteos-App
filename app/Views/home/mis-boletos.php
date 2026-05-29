@@ -12,7 +12,7 @@
                 extend: {
                     colors: {
                         brand: {
-                            gold: '#f5c518',
+                            gold: '#92960f',
                             dark: '#0a0f1e',
                             card: '#111827',
                             accent: '#3b82f6',
@@ -30,7 +30,7 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #f5c518; --dark: #0a0f1e; --card: #111827; }
+        :root { --gold: #92960f; --dark: #0a0f1e; --card: #111827; }
         body { background-color: var(--dark); font-family: 'Inter', sans-serif; color: white; min-height: 100vh; }
         .nav-blur { backdrop-filter: blur(12px); background-color: rgba(10, 15, 30, 0.8); }
         .glow-gold { box-shadow: 0 0 20px rgba(245, 197, 24, 0.3); }

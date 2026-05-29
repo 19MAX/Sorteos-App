@@ -14,11 +14,12 @@
         extend: {
           colors: {
             brand: {
-              gold: '#f5c518',
+              gold: '#92960f',
               dark: '#0a0f1e',
               card: '#111827',
               accent: '#3b82f6',
               muted: '#94a3b8',
+               custom: '#05a2e6',
             }
           },
           fontFamily: {
@@ -36,7 +37,7 @@
 
   <style>
     :root {
-      --gold: #f5c518;
+      --gold: #92960f;
       --dark: #0a0f1e;
       --card: #111827;
     }
@@ -70,7 +71,7 @@
     /* Progress bar fill + shimmer */
     .progress-fill {
       transition: width 1.5s cubic-bezier(0.25, 1, 0.5, 1);
-      background: linear-gradient(90deg, #f5c518, #f97316);
+      background: linear-gradient(90deg, #92960f, #05a2e6);
       position: relative;
       overflow: hidden;
     }
@@ -172,7 +173,7 @@
         <div class="flex flex-col items-center order-2 lg:order-1">
           <div class="relative group w-full max-w-md">
             <div
-              class="absolute -inset-1 bg-gradient-to-r from-brand-gold to-orange-500 rounded-3xl blur opacity-25 group-hover:opacity-50 transition duration-1000">
+              class="absolute -inset-1 bg-gradient-to-r from-brand-gold to-brand-custom rounded-3xl blur opacity-25 group-hover:opacity-50 transition duration-1000">
             </div>
 
             <div id="carousel" class="relative overflow-hidden rounded-2xl shadow-2xl glow-gold float-anim">
@@ -216,8 +217,8 @@
         <div class="space-y-8 order-1 lg:order-2">
           <div class="space-y-4">
             <h1 class="font-heading font-extrabold text-4xl md:text-6xl leading-tight">
-              Gánate el nuevo <span
-                class="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold to-orange-500"><?= esc($titulo) ?></span>
+              Gánate la nueva <span
+                class="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold to-brand-custom"><?= esc($titulo) ?></span>
             </h1>
             <p class="text-brand-muted text-lg max-w-xl">
               <?= esc($descripcion) ?>
@@ -256,7 +257,7 @@
             <?php else: ?>
               <a href="<?= base_url('comprar') ?>" class="glow-pulse block w-full text-center py-5 px-8 rounded-2xl
                           text-brand-dark font-heading font-extrabold text-2xl
-                          bg-gradient-to-r from-brand-gold to-orange-500
+                          bg-gradient-to-r from-brand-gold to-brand-custom
                           hover:scale-[1.02] active:scale-95 transition-all duration-200 uppercase tracking-wide">
                 Participar Ahora
               </a>

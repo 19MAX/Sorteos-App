@@ -374,7 +374,7 @@ function showTxnInfo(data) {
             confirmButtonText: 'Entendido',
             background: '#111827',
             color: '#fff',
-            confirmButtonColor: '#f5c518',
+            confirmButtonColor: '#92960f',
           });
           return;
         }
@@ -492,7 +492,7 @@ function showTxnInfo(data) {
         icon: "warning",
         title: "Pago cancelado",
         text: "El pago fue cancelado. Tu pedido no fue procesado.",
-        confirmButtonColor: "#f5c518",
+        confirmButtonColor: "#92960f",
         background: "#111827",
         color: "#fff",
       }).then(() => {
@@ -603,7 +603,7 @@ function showTxnInfo(data) {
             icon: "warning",
             title: "Cantidad no disponible",
             text: `Solo hay ${PRODUCT.availableTickets} boleto(s) disponible(s). Se ajustará la cantidad.`,
-            confirmButtonColor: "#f5c518",
+            confirmButtonColor: "#92960f",
             background: "#111827",
             color: "#fff",
           }).then(() => {
@@ -712,7 +712,7 @@ function showTxnInfo(data) {
       icon,
       title,
       text,
-      confirmButtonColor: "#f5c518",
+      confirmButtonColor: "#92960f",
       background: "#111827",
       color: "#fff",
     });

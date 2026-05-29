@@ -11,7 +11,7 @@
                 extend: {
                     colors: {
                         brand: {
-                            gold:   '#f5c518',
+                            gold:   '#92960f',
                             dark:   '#0a0f1e',
                             card:   '#111827',
                             accent: '#3b82f6',
@@ -29,7 +29,7 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #f5c518; --dark: #0a0f1e; --card: #111827; }
+        :root { --gold: #92960f; --dark: #0a0f1e; --card: #111827; }
         body  { background-color: var(--dark); font-family: 'Inter', sans-serif; }
         .glow-pulse { animation: pulse-glow 2s ease-in-out infinite; }
         @keyframes pulse-glow {
@@ -203,7 +203,7 @@
                 🎟️ Ver mis boletos
             </a>
             <a href="<?= site_url('/') ?>"
-               class="flex-1 text-center py-4 px-6 rounded-xl bg-gradient-to-r from-brand-gold to-orange-500 text-gray-900 font-heading font-bold hover:scale-105 transition-transform">
+               class="flex-1 text-center py-4 px-6 rounded-xl bg-gradient-to-r from-brand-gold to-brand-custom text-gray-900 font-heading font-bold hover:scale-105 transition-transform">
                 🏠 Volver al inicio
             </a>
         </div>
@@ -220,7 +220,7 @@
         sessionStorage.removeItem("quickluck_order");
         document.addEventListener('DOMContentLoaded', () => {
             const container = document.getElementById('confetti-container');
-            const colors = ['#f5c518', '#f97316', '#22c55e', '#3b82f6', '#ec4899'];
+            const colors = ['#92960f', '#05a2e6', '#22c55e', '#3b82f6', '#ec4899'];
             for (let i = 0; i < 50; i++) {
                 const piece = document.createElement('div');
                 piece.className = 'confetti-piece';
