@@ -31,9 +31,9 @@ class PayphoneController extends BaseController
     {
         try {
             $throttler = service('throttler');
-            $ip = $this->request->getIPAddress();
+            $throttleKey = $this->getThrottleKey('payphone');
 
-            if (!$throttler->check('payphone_' . $ip, self::RATE_LIMIT_MAX, self::RATE_LIMIT_SECONDS)) {
+            if (!$throttler->check($throttleKey, self::RATE_LIMIT_MAX, self::RATE_LIMIT_SECONDS)) {
                 return $this->response
                     ->setStatusCode(429)
                     ->setJSON([

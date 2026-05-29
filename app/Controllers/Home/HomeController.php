@@ -96,9 +96,9 @@ class HomeController extends BaseController
             }
 
             // throttle por IP + cédula
-            $key = $ip . '_' . $cedula;
+            $throttleKey = $this->getThrottleKey('cedula', $cedula);
 
-            if (!$throttler->check($key, 5, MINUTE)) {
+            if (!$throttler->check($throttleKey, 5, MINUTE)) {
                 return $this->response
                     ->setStatusCode(429)
                     ->setJSON([
@@ -232,8 +232,8 @@ class HomeController extends BaseController
                 ]);
             }
 
-            $key = $ip . '_buscar_boletos';
-            if (!$throttler->check($key, 3, MINUTE)) {
+            $throttleKey = $this->getThrottleKey('buscar_boletos', $cedula);
+            if (!$throttler->check($throttleKey, 3, MINUTE)) {
                 return $this->response
                     ->setStatusCode(429)
                     ->setJSON([

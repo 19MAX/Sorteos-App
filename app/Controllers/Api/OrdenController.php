@@ -32,8 +32,9 @@ class OrdenController extends BaseController
         try {
             $throttler = service('throttler');
             $ip = $this->request->getIPAddress();
+            $throttleKey = $this->getThrottleKey('orden');
 
-            if (!$throttler->check('orden_' . $ip, self::RATE_LIMIT_MAX, self::RATE_LIMIT_SECONDS)) {
+            if (!$throttler->check($throttleKey, self::RATE_LIMIT_MAX, self::RATE_LIMIT_SECONDS)) {
                 return $this->response
                     ->setStatusCode(429)
                     ->setJSON([
@@ -191,7 +192,6 @@ class OrdenController extends BaseController
                 ],
                 'csrfHash' => csrf_hash()
             ]);
-
         } catch (\Exception $e) {
             log_message('error', 'Error en OrdenController::crear: ' . $e->getMessage());
 
@@ -301,7 +301,6 @@ class OrdenController extends BaseController
                     'cantidad' => count($tickets)
                 ]
             ]);
-
         } catch (\Exception $e) {
             log_message('error', 'Error en OrdenController::verificar: ' . $e->getMessage());
 

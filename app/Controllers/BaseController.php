@@ -42,4 +42,12 @@ abstract class BaseController extends Controller
         // Preload any models, libraries, etc, here.
         // $this->session = service('session');
     }
+
+    protected function getThrottleKey(string $prefix): string
+    {
+        $ip = $this->request->getIPAddress();
+        $agent = $this->request->getUserAgent()->getAgentString();
+
+        return $prefix . '_' . hash('sha256', $ip . $agent);
+    }
 }
